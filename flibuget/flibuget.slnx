@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="flibuget.Desktop/flibuget.Desktop.csproj" />
+  <Project Path="flibuget/flibuget.csproj" />
+</Solution>
