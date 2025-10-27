@@ -30,25 +30,26 @@ public partial class App : Application
 
         Log.Information("Flibuget application starting up");
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        switch (ApplicationLifetime)
         {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = ServiceProvider.GetRequiredService<MainViewModel>()
-            };
+            case IClassicDesktopStyleApplicationLifetime desktop:
+                desktop.MainWindow = new MainWindow
+                {
+                    DataContext = ServiceProvider.GetRequiredService<MainViewModel>()
+                };
 
-            desktop.Exit += (sender, e) =>
-            {
-                Log.Information("Application shutting down");
-                Log.CloseAndFlush();
-            };
-        }
-        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-        {
-            singleViewPlatform.MainView = new MainView
-            {
-                DataContext = ServiceProvider.GetRequiredService<MainViewModel>()
-            };
+                desktop.Exit += (sender, e) =>
+                {
+                    Log.Information("Application shutting down");
+                    Log.CloseAndFlush();
+                };
+                break;
+            case ISingleViewApplicationLifetime singleViewPlatform:
+                singleViewPlatform.MainView = new MainView
+                {
+                    DataContext = ServiceProvider.GetRequiredService<MainViewModel>()
+                };
+                break;
         }
 
         base.OnFrameworkInitializationCompleted();
