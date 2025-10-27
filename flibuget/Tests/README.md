@@ -10,6 +10,12 @@ Unit tests for the core `flibuget` project including:
 - Services
 - Dependency Injection configuration
 
+### flibuget.Core.Tests
+Unit tests for the `flibuget.Core` project including:
+- Core business logic
+- Domain models
+- Core services
+
 ### flibuget.Desktop.Tests
 Unit tests for the `flibuget.Desktop` project including:
 - Application startup
@@ -41,6 +47,7 @@ dotnet test
 ### Run Tests for a Specific Project
 ```bash
 dotnet test Tests/flibuget.Tests/flibuget.Tests.csproj
+dotnet test Tests/flibuget.Core.Tests/flibuget.Core.Tests.csproj
 dotnet test Tests/flibuget.Desktop.Tests/flibuget.Desktop.Tests.csproj
 ```
 
@@ -205,6 +212,11 @@ Tests/
 ? ??? Services/
 ?   ?   ??? MyServiceTests.cs
 ?   ??? CompositionRootTests.cs
+??? flibuget.Core.Tests/
+?   ??? Models/
+?   ?   ??? MyModelTests.cs
+?   ??? Services/
+?   ?   ??? MyCoreServiceTests.cs
 ??? flibuget.Desktop.Tests/
 ??? ProgramTests.cs
 ```
