@@ -4,7 +4,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using flibuget.ViewModels;
-using Xunit;
 
 namespace flibuget.Tests.ViewModels;
 

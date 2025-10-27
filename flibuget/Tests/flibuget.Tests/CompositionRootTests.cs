@@ -1,11 +1,8 @@
-using AutoFixture;
-using AutoFixture.AutoNSubstitute;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using flibuget.ViewModels;
-using Xunit;
 
 namespace flibuget.Tests;
 

@@ -1,7 +1,6 @@
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;
 using FluentAssertions;
-using Xunit;
 
 namespace flibuget.Desktop.Tests;
 

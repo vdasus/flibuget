@@ -1,4 +1,5 @@
 using System;
+using flibuget.Core.InfraServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -52,10 +53,19 @@ public static class CompositionRoot
         // Register ViewModels
         services.AddTransient<MainViewModel>();
 
-        // Add other services here as your application grows
-        // Example:
-        // services.AddSingleton<IMyService, MyService>();
-        // services.AddTransient<MyOtherViewModel>();
+        // Register Infrastructure Services here as they are created
+        services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddHttpClient();
+        services.AddTransient<IWebService, HttpService>();
+
+        // Register Domain Services and Repos here as they are created
+        //services.AddScoped<IUserDataRepository, UserDataRepository>();
+
+        // Register Application Services here as they are created
+        //services.AddScoped<IAppService, AppService>();
+
 
         //usage example:
         //var myService = App.ServiceProvider.GetRequiredService<IMyService>();
