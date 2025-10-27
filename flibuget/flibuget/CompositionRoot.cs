@@ -12,14 +12,14 @@ public static class CompositionRoot
     public static ServiceProvider ConfigureServices()
     {
         // Determine environment (default to Production if not set)
-        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") 
 ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
             ?? "Production";
 
 #if DEBUG
         // In Debug builds, default to Development if no environment variable is set
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"))
-        && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")))
+      if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")) 
+      && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")))
         {
             environment = "Development";
         }
@@ -40,25 +40,25 @@ public static class CompositionRoot
         var services = new ServiceCollection();
 
         // Register configuration
-        services.AddSingleton<IConfiguration>(configuration);
+      services.AddSingleton<IConfiguration>(configuration);
 
         // Add Serilog logging
         services.AddLogging(builder =>
   {
-      builder.ClearProviders();
-      builder.AddSerilog(dispose: true);
-  });
+        builder.ClearProviders();
+     builder.AddSerilog(dispose: true);
+        });
 
         // Register ViewModels
         services.AddTransient<MainViewModel>();
 
         // Add other services here as your application grows
         // Example:
-        // services.AddSingleton<IMyService, MyService>();
+  // services.AddSingleton<IMyService, MyService>();
         // services.AddTransient<MyOtherViewModel>();
 
-        //usage example:
-        //var myService = App.ServiceProvider.GetRequiredService<IMyService>();
+ //usage example:
+     //var myService = App.ServiceProvider.GetRequiredService<IMyService>();
 
         Log.Information("Application services configured successfully for environment: {Environment}", environment);
 
