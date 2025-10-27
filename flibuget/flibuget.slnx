@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/ExtBinaries/">
+    <File Path="VersionUp.bat" />
+    <File Path="vrinc.exe" />
+  </Folder>
   <Folder Name="/TESTS/">
     <Project Path="Tests/flibuget.Core.Tests/flibuget.Core.Tests.csproj" />
     <Project Path="Tests/flibuget.Desktop.Tests/flibuget.Desktop.Tests.csproj" />
