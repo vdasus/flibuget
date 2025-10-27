@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="flibuget.Tests.v3.ncrunchproject" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\..\flibuget\appsettings.Development.json" Link="appsettings.Development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
