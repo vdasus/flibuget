@@ -1,4 +1,5 @@
 using System;
+using flibuget.Core.Configuration;
 using flibuget.Core.InfraServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,9 +64,10 @@ public static class CompositionRoot
         // Register Domain Services and Repos here as they are created
         //services.AddScoped<IUserDataRepository, UserDataRepository>();
 
+
         // Register Application Services here as they are created
         //services.AddScoped<IAppService, AppService>();
-
+        services.AddPerplexityService(configuration);
 
         //usage example:
         //var myService = App.ServiceProvider.GetRequiredService<IMyService>();
