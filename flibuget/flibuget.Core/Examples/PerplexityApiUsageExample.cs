@@ -113,7 +113,7 @@ public static class PerplexityApiUsageExample
     /// Use this when you need predictable, structured data that can be deserialized into C# objects.
     /// This example demonstrates getting detailed audiobook information in a structured format.
     /// </summary>
-    public static async Task Example3_AudioBookStructuredJsonResponseAsync(IServiceProvider serviceProvider, string book, string author)
+    public static async Task<AudiobookDescriptionDto> Example3_AudioBookStructuredJsonResponseAsync(IServiceProvider serviceProvider, string book, string author)
     {
         Console.WriteLine("=== Example 3: Structured JSON Response - Audiobook Description ===\n");
 
@@ -176,21 +176,15 @@ public static class PerplexityApiUsageExample
             Console.WriteLine("\n=== Parsed Audiobook Information ===");
             if (result != null)
             {
-                Console.WriteLine($"Title: {result.Title}");
-                Console.WriteLine($"Author: {result.Author}");
-                Console.WriteLine($"Duration: {result.Duration}");
-                Console.WriteLine($"Narrator: {result.Narrator}");
-                Console.WriteLine($"Age Restriction: {result.AgeRestriction}");
-                Console.WriteLine($"\nDescription: {result.Description}");
-                Console.WriteLine($"\nThemes: {string.Join(", ", result.Themes ?? [])}");
-                Console.WriteLine($"\nCover: {result.CoverLink}");
-                Console.WriteLine($"Link: {result.Link}");
+                return result;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}\n");
+            return new AudiobookDescriptionDto();
         }
+        return new AudiobookDescriptionDto();
     }
 
     /// <summary>

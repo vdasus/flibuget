@@ -11,18 +11,20 @@ public class MainViewModelTests
 {
     private readonly IFixture _fixture;
     private readonly ILogger<MainViewModel> _mockLogger;
+    private readonly IServiceProvider _mockServiceProvider;
 
     public MainViewModelTests()
     {
         _fixture = new Fixture().Customize(new AutoNSubstituteCustomization());
         _mockLogger = Substitute.For<ILogger<MainViewModel>>();
+        _mockServiceProvider = Substitute.For<IServiceProvider>();
   }
 
     [Fact]
     public void Constructor_ShouldInitialize_WithCorrectGreeting()
     {
         // Arrange & Act
-        var sut = new MainViewModel(_mockLogger);
+        var sut = new MainViewModel(_mockLogger, _mockServiceProvider);
 
         // Assert
         sut.Greeting.Should().Be("Flibuget!");
@@ -32,7 +34,7 @@ public class MainViewModelTests
     public void Constructor_ShouldLogInformation_WhenInitialized()
     {
 // Arrange & Act
- var sut = new MainViewModel(_mockLogger);
+ var sut = new MainViewModel(_mockLogger, _mockServiceProvider);
 
         // Assert
         _mockLogger.Received(1).Log(
@@ -47,7 +49,7 @@ public class MainViewModelTests
     public void Greeting_ShouldNotBeNull_OrEmpty()
     {
         // Arrange
-        var sut = new MainViewModel(_mockLogger);
+        var sut = new MainViewModel(_mockLogger, _mockServiceProvider);
 
         // Assert
         sut.Greeting.Should().NotBeNullOrEmpty();
@@ -57,7 +59,7 @@ public class MainViewModelTests
     public void Constructor_ShouldLogDebugMessage_WithGreeting()
     {
         // Arrange & Act
-        var sut = new MainViewModel(_mockLogger);
+        var sut = new MainViewModel(_mockLogger, _mockServiceProvider);
 
         // Assert
         _mockLogger.Received(1).Log(
@@ -72,7 +74,7 @@ public class MainViewModelTests
     public void Constructor_ShouldLogEnvironmentInformation()
     {
       // Arrange & Act
-      var sut = new MainViewModel(_mockLogger);
+      var sut = new MainViewModel(_mockLogger, _mockServiceProvider);
 
    // Assert
         _mockLogger.Received().Log(
