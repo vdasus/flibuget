@@ -3,7 +3,8 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
    xmlns:vm="clr-namespace:flibuget.ViewModels"
-   mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+       Width="600" Height="600"
+   mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
     x:Class="flibuget.Views.MainView"
            x:DataType="vm:MainViewModel">
     <Design.DataContext>
@@ -11,8 +12,6 @@
  </Design.DataContext>
     
     <UserControl.Styles>
-        <!-- Fix TextBox states for better visibility -->
- <!-- BASE STYLE - Ensure text is ALWAYS visible with dark color -->
     <Style Selector="TextBox">
      <Setter Property="Foreground" Value="#212529"/>
  <Setter Property="CaretBrush" Value="#4F8EF7"/>
@@ -20,7 +19,6 @@
       <Setter Property="SelectionForegroundBrush" Value="White"/>
  </Style>
      
-     <!-- Explicitly set foreground for ALL states -->
      <Style Selector="TextBox:not(:focus)">
      <Setter Property="Foreground" Value="#212529"/>
  </Style>
@@ -126,7 +124,7 @@
     Margin="0,0,0,8"/>
  <TextBox Text="{Binding Author}" 
           Watermark="e.g., J.R.R. Tolkien"
-          MinHeight="40"
+          MinHeight="40" MinWidth="200"
         CornerRadius="6"
          FontSize="15"/>
            </StackPanel>
@@ -141,13 +139,14 @@
        Watermark="e.g., The Hobbit"
    MinHeight="40"
           CornerRadius="6"
+       MinWidth="200"
            FontSize="15"/>
     </StackPanel>
       </Grid>
  
        <!-- Search Button -->
           <Button HorizontalAlignment="Stretch" 
-       MinHeight="48"
+       MinHeight="48" MinWidth="200"
            FontSize="16"
           FontWeight="SemiBold"
    CornerRadius="8"
