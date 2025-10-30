@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:vm="clr-namespace:flibuget.ViewModels"
    mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
@@ -8,7 +8,7 @@
            x:DataType="vm:MainViewModel">
     <Design.DataContext>
    <vm:MainViewModel />
-    </Design.DataContext>
+ </Design.DataContext>
     
     <UserControl.Styles>
         <!-- Fix TextBox states for better visibility -->
@@ -21,12 +21,12 @@
         </Style>
         
         <!-- Explicitly set foreground for ALL states -->
-        <Style Selector="TextBox:not(:focus)">
-            <Setter Property="Foreground" Value="#212529"/>
+     <Style Selector="TextBox:not(:focus)">
+     <Setter Property="Foreground" Value="#212529"/>
  </Style>
         
         <Style Selector="TextBox:focus">
-            <Setter Property="Foreground" Value="#212529"/>
+    <Setter Property="Foreground" Value="#212529"/>
         </Style>
  
         <Style Selector="TextBox:pointerover">
@@ -34,29 +34,29 @@
    </Style>
         
         <!-- Normal/Unfocused state -->
-        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+     <Style Selector="TextBox /template/ Border#PART_BorderElement">
      <Setter Property="Background" Value="White"/>
           <Setter Property="BorderBrush" Value="#CED4DA"/>
       <Setter Property="BorderThickness" Value="1"/>
       </Style>
     
-        <!-- Hover state -->
+    <!-- Hover state -->
         <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
   <Setter Property="Background" Value="White"/>
   <Setter Property="BorderBrush" Value="#7FA9F3"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
-        
+ 
     <!-- Focus state -->
         <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
  <Setter Property="Background" Value="White"/>
        <Setter Property="BorderBrush" Value="#4F8EF7"/>
-            <Setter Property="BorderThickness" Value="2"/>
+     <Setter Property="BorderThickness" Value="2"/>
      </Style>
         
         <!-- Disabled state -->
   <Style Selector="TextBox:disabled">
-          <Setter Property="Foreground" Value="#6C757D"/>
+<Setter Property="Foreground" Value="#6C757D"/>
         </Style>
         
      <!-- Watermark/Placeholder text styling -->
@@ -64,23 +64,39 @@
        <Setter Property="Foreground" Value="#6C757D"/>
      <Setter Property="Opacity" Value="0.7"/>
         </Style>
-        
+   
   <!-- ReadOnly TextBox styling -->
-        <Style Selector="TextBox:readonly /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
+   <Style Selector="TextBox:readonly /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+      <!-- Button styling to fix hover issue -->
+      <Style Selector="Button">
+        <Setter Property="Background" Value="#4F8EF7"/>
+<Setter Property="Foreground" Value="White"/>
+        </Style>
+      
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+     <Setter Property="Background" Value="#3A7DE8"/>
+          <Setter Property="TextBlock.Foreground" Value="White"/>
+        </Style>
+        
+        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#2E6BD6"/>
+<Setter Property="TextBlock.Foreground" Value="White"/>
         </Style>
     </UserControl.Styles>
     
  <ScrollViewer>
-        <Border Padding="40" Background="#F5F7FA">
+  <Border Padding="40" Background="#F5F7FA">
     <StackPanel MaxWidth="800" Spacing="24">
       
         <!-- Header -->
 <TextBlock Text="{Binding Greeting}" 
    HorizontalAlignment="Center" 
-          FontSize="32" 
-           FontWeight="Bold"
+  FontSize="32" 
+      FontWeight="Bold"
         Foreground="#2C3E50"
   Margin="0,0,0,20"/>
        
@@ -92,9 +108,9 @@ BoxShadow="0 2 8 0 #10000000">
          <StackPanel Spacing="16">
        <TextBlock Text="Search Audiobook" 
             FontSize="18" 
-         FontWeight="SemiBold"
+      FontWeight="SemiBold"
  Foreground="#34495E"/>
-             
+   
   <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,8,Auto">
       <!-- Author Input -->
         <StackPanel Grid.Column="0">
@@ -104,7 +120,7 @@ BoxShadow="0 2 8 0 #10000000">
      Margin="0,0,0,6"/>
          <TextBox Text="{Binding Author}" 
   Watermark="e.g., J.R.R. Tolkien"
-       Height="36"
+   Height="36"
         CornerRadius="6"/>
      </StackPanel>
     
@@ -113,14 +129,14 @@ BoxShadow="0 2 8 0 #10000000">
   <TextBlock Text="Book Title" 
 FontWeight="Medium"
   Foreground="#7F8C8D"
-     Margin="0,0,0,6"/>
+  Margin="0,0,0,6"/>
       <TextBox Text="{Binding Book}" 
     Watermark="e.g., The Hobbit"
 Height="36"
   CornerRadius="6"/>
-      </StackPanel>
+   </StackPanel>
       </Grid>
-         
+     
      <!-- Search Button -->
    <Button Content="?? Search Audiobook" 
    Command="{Binding ClickCommand}" 
@@ -129,26 +145,27 @@ Height="36"
     FontSize="15"
   FontWeight="SemiBold"
   CornerRadius="8"
-       Background="#4F8EF7" 
-                 Foreground="White"
-      Margin="0,8,0,0"/>
+   Background="#4F8EF7" 
+    Foreground="White"
+      Margin="0,8,0,0"
+      IsDefault="True"/>
         </StackPanel>
-    </Border>
+</Border>
      
         <!-- Results Section -->
           <Border Background="White" 
      CornerRadius="12" 
  Padding="24"
        BoxShadow="0 2 8 0 #10000000"
-        IsVisible="{Binding Result, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-      <Grid ColumnDefinitions="200,24,*" RowDefinitions="Auto">
+   IsVisible="{Binding Result, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+   <Grid ColumnDefinitions="200,24,*" RowDefinitions="Auto">
           
    <!-- Book Cover -->
    <Border Grid.Column="0" 
    CornerRadius="8"
  ClipToBounds="True"
-        Background="#ECF0F1"
-      Width="200"
+      Background="#ECF0F1"
+   Width="200"
 Height="200"
       VerticalAlignment="Top">
     <Panel>
@@ -163,13 +180,13 @@ Height="200"
    VerticalAlignment="Center"
    Foreground="#BDC3C7"
 IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNull}}"/>
-       </Panel>
+    </Panel>
    </Border>
   
        <!-- Book Details -->
          <StackPanel Grid.Column="2" Spacing="12">
       <TextBlock Text="Audiobook Details" 
-       FontSize="20" 
+    FontSize="20" 
            FontWeight="SemiBold"
        Foreground="#2C3E50"
         Margin="0,0,0,8"/>
@@ -180,11 +197,11 @@ IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNull}}"/>
       Padding="16">
         <TextBox Text="{Binding Result}" 
  IsReadOnly="True"
-              AcceptsReturn="True"
+     AcceptsReturn="True"
   TextWrapping="Wrap"
   BorderThickness="0"
     Background="Transparent"
-       FontSize="14"
+     FontSize="14"
        LineHeight="22"
         Foreground="#2C3E50"/>
        </Border>
@@ -197,15 +214,15 @@ IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNull}}"/>
    <Border Background="White" 
   CornerRadius="12" 
     Padding="48"
-        BoxShadow="0 2 8 0 #10000000"
+   BoxShadow="0 2 8 0 #10000000"
     IsVisible="{Binding Result, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-    HorizontalAlignment="Stretch">
+  HorizontalAlignment="Stretch">
    <StackPanel Spacing="12" HorizontalAlignment="Center">
          <TextBlock Text="??" 
          FontSize="48"
   HorizontalAlignment="Center"
          Foreground="#BDC3C7"/>
-          <TextBlock Text="Search for an audiobook to get started" 
+      <TextBlock Text="Search for an audiobook to get started" 
     FontSize="16"
      Foreground="#95A5A6"
  HorizontalAlignment="Center"
