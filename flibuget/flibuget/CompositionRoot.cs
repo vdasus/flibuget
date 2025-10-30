@@ -13,35 +13,35 @@ public static class CompositionRoot
 {
     public static ServiceProvider ConfigureServices()
     {
-        // Determine environment (default to Production if not set)
+  // Determine environment (default to Production if not set)
         var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
 ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-            ?? "Production";
+          ?? "Production";
 
 #if DEBUG
         // In Debug builds, default to Development if no environment variable is set
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"))
-        && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")))
+     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"))
+  && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")))
         {
-            environment = "Development";
-        }
+environment = "Development";
+  }
 #endif
 
         // Build configuration
-        var configuration = new ConfigurationBuilder()
-      .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+     var configuration = new ConfigurationBuilder()
+ .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+      .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
  .Build();
 
         // Configure Serilog from appsettings.json
-        Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(configuration)
+      Log.Logger = new LoggerConfiguration()
+      .ReadFrom.Configuration(configuration)
       .CreateLogger();
 
         var services = new ServiceCollection();
 
-        // Register configuration
+     // Register configuration
         services.AddSingleton<IConfiguration>(configuration);
 
         // Add Serilog logging
@@ -62,18 +62,22 @@ public static class CompositionRoot
         services.AddTransient<IWebService, HttpService>();
 
         // Register Domain Services and Repos here as they are created
-        //services.AddScoped<IUserDataRepository, UserDataRepository>();
-
+      //services.AddScoped<IUserDataRepository, UserDataRepository>();
 
         // Register Application Services here as they are created
         //services.AddScoped<IAppService, AppService>();
-        services.AddPerplexityService(configuration);
+        
+        // Add AI Services (supports OpenAI, Perplexity, etc.)
+        services.AddAIServices(configuration);
+        
+        // Register AudiobookService (now uses AI infrastructure)
+        services.AddScoped<Core.DomainServices.AudiobookService>();
 
         //usage example:
         //var myService = App.ServiceProvider.GetRequiredService<IMyService>();
 
         Log.Information("Application services configured successfully for environment: {Environment}", environment);
 
-        return services.BuildServiceProvider();
+   return services.BuildServiceProvider();
     }
 }

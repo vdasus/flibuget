@@ -72,7 +72,7 @@ public partial class MainViewModel : ViewModelBase
                 return;
             }
 
-            var dto = await PerplexityApiUsageExample.Example3_AudioBookStructuredJsonResponseAsync(_serviceProvider, Book, Author).ConfigureAwait(true);
+            var dto = await AIServiceUsageExamplesForAudiobooks.Example3_AudioBookStructuredJsonResponseAsync(_serviceProvider, Book, Author).ConfigureAwait(true);
             if (dto != null)
             {
                 Result =
