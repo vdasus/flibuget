@@ -419,3 +419,4 @@ FodyWeavers.xsd
 *.ncrunchsolution
 *.ncrunchproject
 *.~v
+/flibuget/flibuget/ztemp

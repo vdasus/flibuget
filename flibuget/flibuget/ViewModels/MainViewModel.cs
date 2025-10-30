@@ -5,12 +5,14 @@ using flibuget.Core.Examples;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace flibuget.ViewModels;
 
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public partial class MainViewModel : ViewModelBase
 {
     private readonly ILogger<MainViewModel>? _logger;
@@ -73,34 +75,25 @@ public partial class MainViewModel : ViewModelBase
             }
 
             var dto = await AIServiceUsageExamplesForAudiobooks.Example3_AudioBookStructuredJsonResponseAsync(_serviceProvider, Book, Author).ConfigureAwait(true);
-            if (dto != null)
-            {
-                Result =
+            Result =
                 $"Title: {dto.Title}\nAuthor: {dto.Author}\nDuration: {dto.Duration}\nNarrator: {dto.Narrator}\nAge Restriction: {dto.AgeRestriction}\nDescription: {dto.Description}\nThemes: {string.Join(", ", dto.Themes ?? new List<string>())}\nLink: {dto.Link}\nImgUrl: {dto.CoverLink}";
 
-                ImageUrl = dto.CoverLink ?? string.Empty;
+            ImageUrl = dto.CoverLink ?? string.Empty;
 
-                // Load image from URL
-                if (!string.IsNullOrWhiteSpace(dto.CoverLink))
-                {
-                    try
-                    {
-                        var imageBytes = await _httpClient.GetByteArrayAsync(dto.CoverLink);
-                        using var ms = new MemoryStream(imageBytes);
-                        CoverImage = new Bitmap(ms);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger?.LogWarning(ex, "Failed to load cover image from {Url}", dto.CoverLink);
-                        CoverImage = null;
-                    }
-                }
-            }
-            else
+            // Load image from URL
+            if (!string.IsNullOrWhiteSpace(dto.CoverLink))
             {
-                Result = "No data returned.";
-                ImageUrl = string.Empty;
-                CoverImage = null;
+                try
+                {
+                    var imageBytes = await _httpClient.GetByteArrayAsync(dto.CoverLink).ConfigureAwait(false);
+                    using var ms = new MemoryStream(imageBytes);
+                    CoverImage = new Bitmap(ms);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogWarning(ex, "Failed to load cover image from {Url}", dto.CoverLink);
+                    CoverImage = null;
+                }
             }
         }
         catch (Exception ex)

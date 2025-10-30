@@ -6,7 +6,7 @@
         xmlns:views="clr-namespace:flibuget.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="flibuget.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/flibuget.ico"
         Title="flibuget"
         Width="900" Height="700"
         MinWidth="600" MinHeight="500"
