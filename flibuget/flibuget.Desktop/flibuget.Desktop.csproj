@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AssemblyVersion>0.0.0.4</AssemblyVersion>
-    <FileVersion>0.0.0.4</FileVersion>
+    <AssemblyVersion>0.0.0.5</AssemblyVersion>
+    <FileVersion>0.0.0.5</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="flibuget.Desktop.~v" />
@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.5" />
   </ItemGroup>
 
   <ItemGroup>

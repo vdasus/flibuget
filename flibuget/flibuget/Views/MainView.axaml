@@ -158,6 +158,22 @@ Margin="0,8,0,0"
                <TextBlock Text="&#x1F50D;" FontSize="16" VerticalAlignment="Center"/>
      <TextBlock Text="Search Audiobook" FontSize="16" VerticalAlignment="Center"/>
           </StackPanel>
+    </Button> 
+     <!-- Test Button -->
+      <Button HorizontalAlignment="Stretch" 
+       MinHeight="48" MinWidth="200"
+         FontSize="16"
+          FontWeight="SemiBold"
+   CornerRadius="8"
+        Background="#4F8EF7" 
+         Foreground="White"
+Margin="0,8,0,0"
+    IsDefault="True"
+     Command="{Binding TestCommand}">
+   <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+               <TextBlock Text="&#x1F50D;" FontSize="16" VerticalAlignment="Center"/>
+     <TextBlock Text="Test Audiobook" FontSize="16" VerticalAlignment="Center"/>
+          </StackPanel>
     </Button>
     </StackPanel>
         </Border>

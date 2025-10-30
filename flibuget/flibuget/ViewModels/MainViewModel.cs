@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using flibuget.Core.InfraServices.AudioTags; // added
 
 namespace flibuget.ViewModels;
 
@@ -17,6 +18,7 @@ public partial class MainViewModel : ViewModelBase
 {
     private readonly ILogger<MainViewModel>? _logger;
     private readonly IServiceProvider? _serviceProvider;
+    private readonly IAudioTagService? _tagService; // added
     private static readonly HttpClient _httpClient = new();
 
     [ObservableProperty]
@@ -38,26 +40,37 @@ public partial class MainViewModel : ViewModelBase
     private Bitmap? coverImage;
 
     public object ClickCommand { get; }
+    public object TestCommand { get; }
 
     // Parameterless constructor for designer support
-    public MainViewModel() : this(null!, null!)
-    {
-    }
+    public MainViewModel() : this(null!, null!, null!) { }
 
+    // Backward compatibility constructor (tests still use this)
     public MainViewModel(ILogger<MainViewModel> logger, IServiceProvider serviceProvider)
+        : this(logger, serviceProvider, null!) { }
+
+    public MainViewModel(ILogger<MainViewModel> logger, IServiceProvider serviceProvider, IAudioTagService tagService)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
+        _tagService = tagService; // may be null in tests / design
 
         _logger?.LogInformation("MainViewModel initialized");
         _logger?.LogDebug("Greeting message: {Greeting}", Greeting);
 
-        // Example of structured logging with properties
         _logger?.LogInformation("Application started for user {UserName} on machine {MachineName}",
               Environment.UserName,
               Environment.MachineName);
 
         ClickCommand = new AsyncRelayCommand(OnButtonClickAsync);
+        TestCommand = new AsyncRelayCommand(OnTestButtonClickAsync);
+    }
+
+    private Task OnTestButtonClickAsync()
+    {
+        var file = "D:\\_TEMP\\mp3tag\\temp\\01_Opergruppa_v_beriozovke.mp3";
+        var tmp = _tagService.Read(file.Trim());
+        return default;
     }
 
     private async Task OnButtonClickAsync()

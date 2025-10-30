@@ -4,9 +4,19 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>0.0.0.5</AssemblyVersion>
-    <FileVersion>0.0.0.5</FileVersion>
+    <AssemblyVersion>0.0.0.6</AssemblyVersion>
+    <FileVersion>0.0.0.6</FileVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Benchmarks\**" />
+    <EmbeddedResource Remove="Benchmarks\**" />
+    <None Remove="Benchmarks\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="C:\Users\me\.nuget\packages\microsoft.visualstudio.diagnosticshub.benchmarkdotnetdiagnosers\18.0.36525.3\contentFiles\cs\any\BenchmarkProfilerAgentConfig.g.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="flibuget.Core.~v" />
@@ -19,7 +29,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.10" />
+    <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36525.3" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.5" />
   </ItemGroup>
 
 </Project>

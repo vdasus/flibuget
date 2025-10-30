@@ -2,6 +2,7 @@ using flibuget.Core.Domain.DTO;
 
 namespace flibuget.Core.InfraServices.AudioTags;
 
+// ASAP domain or infra service? think about refactoring later
 /// <summary>
 /// Implementation based on TagLib# supporting MP3, AAC/MP4 (M4A/M4B), FLAC, WAV (limited) etc.
 /// </summary>
@@ -9,7 +10,9 @@ public class AudioTagService : IAudioTagService
 {
     public AudiobookTagDto? Read(string filePath)
     {
-        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return null; // disambiguate File
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            throw new FileNotFoundException($"Audio file not found [{filePath}]"); // disambiguate File
+
         using var file = TagLib.File.Create(filePath);
         var tag = file.Tag;
         // Map tag fields
@@ -33,54 +36,39 @@ public class AudioTagService : IAudioTagService
     public void Write(string filePath, AudiobookTagDto tags, bool overwriteExisting = false)
     {
         ArgumentNullException.ThrowIfNull(tags);
-        if (!File.Exists(filePath)) throw new FileNotFoundException("Audio file not found", filePath); // disambiguate File
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            throw new FileNotFoundException("Audio file not found", filePath); // disambiguate File
+
         using var file = TagLib.File.Create(filePath);
         var tag = file.Tag;
 
-        // Performers / Author
-        if (!string.IsNullOrEmpty(tags.Author))
-        {
-            if (overwriteExisting || tag.Performers.Length == 0)
-                tag.Performers = [tags.Author];
-        }
+        // Array-based fields
+        if (ShouldSetArray(tags.Author, tag.Performers)) tag.Performers = [tags.Author!];
+        if (ShouldSetArray(tags.Narrator, tag.AlbumArtists)) tag.AlbumArtists = [tags.Narrator!];
+        if (ShouldSetArray(tags.Genre, tag.Genres)) tag.Genres = [tags.Genre!];
+        if (ShouldSetArray(tags.Producer, tag.Composers)) tag.Composers = [tags.Producer!];
 
-        if (!string.IsNullOrEmpty(tags.Narrator))
-        {
-            if (overwriteExisting || tag.AlbumArtists.Length == 0)
-                tag.AlbumArtists = [tags.Narrator];
-        }
+        // Scalar string fields
+        if (ShouldSet(tags.Title, tag.Title)) tag.Title = tags.Title!;
+        if (ShouldSet(tags.Album, tag.Album)) tag.Album = tags.Album!;
+        if (ShouldSet(tags.Comment, tag.Comment)) tag.Comment = tags.Comment!;
+        if (ShouldSet(tags.Copyright, tag.Copyright)) tag.Copyright = tags.Copyright!;
+        if (ShouldSet(tags.Publisher, tag.Publisher)) tag.Publisher = tags.Publisher!;
 
-        if (!string.IsNullOrEmpty(tags.Genre))
-        {
-            if (overwriteExisting || tag.Genres.Length == 0)
-                tag.Genres = [tags.Genre];
-        }
+        // Numeric fields
+        if (tags.TrackNumber.HasValue && (overwriteExisting || tag.Track == 0))
+            tag.Track = (uint)tags.TrackNumber.Value;
+        if (tags.Year.HasValue && (overwriteExisting || tag.Year == 0))
+            tag.Year = (uint)tags.Year.Value;
 
-        // Simple scalar fields
-        if (!string.IsNullOrEmpty(tags.Title) && (overwriteExisting || string.IsNullOrEmpty(tag.Title))) tag.Title = tags.Title;
-        if (!string.IsNullOrEmpty(tags.Album) && (overwriteExisting || string.IsNullOrEmpty(tag.Album))) tag.Album = tags.Album;
-        if (tags.TrackNumber.HasValue && (overwriteExisting || tag.Track == 0)) tag.Track = (uint)tags.TrackNumber.Value;
-        if (tags.Year.HasValue && (overwriteExisting || tag.Year == 0)) tag.Year = (uint)tags.Year.Value;
-        if (!string.IsNullOrEmpty(tags.Comment) && (overwriteExisting || string.IsNullOrEmpty(tag.Comment))) tag.Comment = tags.Comment;
-        if (!string.IsNullOrEmpty(tags.Copyright) && (overwriteExisting || string.IsNullOrEmpty(tag.Copyright))) tag.Copyright = tags.Copyright;
-        if (!string.IsNullOrEmpty(tags.Publisher) && (overwriteExisting || string.IsNullOrEmpty(tag.Publisher))) tag.Publisher = tags.Publisher;
-
-        // Producer (no direct field; put into Composer or Comment extension)
-        if (!string.IsNullOrEmpty(tags.Producer))
-        {
-            if (overwriteExisting || tag.Composers.Length == 0)
-                tag.Composers = [tags.Producer];
-        }
-
-        // Cover image from URL not embedded automatically; user can supply actual file later.
         // Persist changes
         file.Save();
         return;
 
-        // Helper local function
-        void Set(ref string? current, string value)
-        {
-            if (overwriteExisting || string.IsNullOrEmpty(current)) current = value;
-        }
+        bool ShouldSet(string? incoming, string? existing) =>
+            !string.IsNullOrEmpty(incoming) && (overwriteExisting || string.IsNullOrEmpty(existing));
+
+        bool ShouldSetArray(string? incoming, string[] existing) =>
+            !string.IsNullOrEmpty(incoming) && (overwriteExisting || existing.Length == 0);
     }
 }

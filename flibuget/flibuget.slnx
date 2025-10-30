@@ -8,6 +8,7 @@
     <Project Path="Tests/flibuget.Desktop.Tests/flibuget.Desktop.Tests.csproj" />
     <Project Path="Tests/flibuget.Tests/flibuget.Tests.csproj" />
   </Folder>
+  <Project Path="flibuget.Benchmarks/flibuget.Benchmarks.csproj" />
   <Project Path="flibuget.Core/flibuget.Core.csproj" />
   <Project Path="flibuget.Desktop/flibuget.Desktop.csproj" />
   <Project Path="flibuget/flibuget.csproj" />
