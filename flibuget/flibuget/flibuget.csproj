@@ -13,6 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaXaml Remove="ztemp\**" />
+    <Compile Remove="ztemp\**" />
+    <EmbeddedResource Remove="ztemp\**" />
+    <None Remove="ztemp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="appsettings.Development.json" />
     <None Remove="appsettings.json" />
     <None Remove="flibuget.~v" />
