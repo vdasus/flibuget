@@ -1,11 +1,12 @@
-using System;
 using flibuget.Core.Configuration;
 using flibuget.Core.InfraServices;
+using flibuget.Core.InfraServices.AudioTags;
+using flibuget.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using flibuget.ViewModels;
+using System;
 
 namespace flibuget;
 
@@ -61,8 +62,9 @@ public static class CompositionRoot
         services.AddHttpClient();
         services.AddTransient<IWebService, HttpService>();
 
-        // Add AI Services (supports OpenAI, Perplexity, etc.)
+        // Add infrastructure services
         services.AddAIServices(configuration);
+        services.AddAudioTagService();
 
         // Register Domain Services and Repos here as they are created
         //services.AddScoped<IUserDataRepository, UserDataRepository>();
