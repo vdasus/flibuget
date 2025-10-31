@@ -10,6 +10,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using flibuget.Core.InfraServices.AudioTags; // added
+using System.Text; // added
 
 namespace flibuget.ViewModels;
 
@@ -68,9 +69,39 @@ public partial class MainViewModel : ViewModelBase
 
     private Task OnTestButtonClickAsync()
     {
+        if (_tagService == null)
+        {
+            Result = "Tag service not configured";
+            return Task.CompletedTask;
+        }
+
         var file = "D:\\_TEMP\\mp3tag\\temp\\01_Opergruppa_v_beriozovke.mp3";
         var tmp = _tagService.Read(file.Trim());
-        return default;
+
+        if (tmp == null)
+        {
+            Result = "No tags found";
+            return Task.CompletedTask;
+        }
+
+        // Build multiline string with all fields
+        var sb = new StringBuilder();
+        sb.AppendLine($"Author: {tmp.Author}");
+        sb.AppendLine($"Title: {tmp.Title}");
+        sb.AppendLine($"Album: {tmp.Album}");
+        sb.AppendLine($"TrackNumber: {(tmp.TrackNumber.HasValue ? tmp.TrackNumber.Value.ToString() : "-")}");
+        sb.AppendLine($"Year: {(tmp.Year.HasValue ? tmp.Year.Value.ToString() : "-")}");
+        sb.AppendLine($"Genre: {tmp.Genre}");
+        sb.AppendLine($"Narrator: {tmp.Narrator}");
+        sb.AppendLine($"Producer: {tmp.Producer}");
+        sb.AppendLine($"Copyright: {tmp.Copyright}");
+        sb.AppendLine($"Publisher: {tmp.Publisher}");
+        sb.AppendLine($"Comment: {tmp.Comment}");
+        sb.AppendLine($"ASIN: {tmp.ASIN}");
+        sb.AppendLine($"CoverImageUrl: {tmp.CoverImageUrl}");
+
+        Result = sb.ToString();
+        return Task.CompletedTask;
     }
 
     private async Task OnButtonClickAsync()
