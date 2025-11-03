@@ -1,13 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:vm="clr-namespace:flibuget.ViewModels"
   xmlns:models="clr-namespace:flibuget.Models"
     mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
-             x:Class="flibuget.Views.MainView"
-             x:DataType="vm:MainViewModel">
-    <Design.DataContext>
+ x:Class="flibuget.Views.MainView"
+      x:DataType="vm:MainViewModel">
+ <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
@@ -106,20 +106,20 @@
 
         <!-- Bottom Action Buttons -->
         <Border DockPanel.Dock="Bottom" Background="#2C2C2C" Padding="12,8" BorderBrush="#3C3C3C" BorderThickness="0,1,0,0">
-            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto">
- <Button Grid.Column="0" Content="SELECT ALL" Command="{Binding SelectAllCommand}" 
-    Margin="0,0,8,0" MinWidth="100"/>
-         <Button Grid.Column="1" Content="CLEAR SELECTION" Command="{Binding ClearSelectionCommand}" 
-   MinWidth="130"/>
-
-       <Button Grid.Column="3" Content="Get info from AI" Command="{Binding GetInfoFromAICommand}" 
-  Margin="0,0,8,0" MinWidth="130"/>
-       <Button Grid.Column="4" Content="Get info from selected file" Command="{Binding GetInfoFromSelectedFileCommand}" 
-          Margin="0,0,8,0" MinWidth="180"/>
-            <Button Grid.Column="5" Content="Set tags into selected files" Command="{Binding SetTagsIntoSelectedFilesCommand}" 
-               Margin="0,0,8,0" MinWidth="180"/>
-      <Button Grid.Column="6" Content="Undo" Command="{Binding UndoCommand}" 
-           MinWidth="80"/>
+            <Grid RowDefinitions="Auto,Auto">
+           <!-- First Row: Selection Buttons -->
+       <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+         <Button Content="SELECT ALL" Command="{Binding SelectAllCommand}" MinWidth="100"/>
+                  <Button Content="CLEAR SELECTION" Command="{Binding ClearSelectionCommand}" MinWidth="130"/>
+                </StackPanel>
+         
+             <!-- Second Row: Action Buttons -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+ <Button Content="Get info from AI" Command="{Binding GetInfoFromAICommand}" MinWidth="130"/>
+     <Button Content="Get info from selected file" Command="{Binding GetInfoFromSelectedFileCommand}" MinWidth="180"/>
+        <Button Content="Set tags into selected files" Command="{Binding SetTagsIntoSelectedFilesCommand}" MinWidth="180"/>
+    <Button Content="Undo" Command="{Binding UndoCommand}" MinWidth="80"/>
+     </StackPanel>
             </Grid>
         </Border>
 
@@ -152,7 +152,7 @@
    <!-- Right Panel - Tag Editor and Cover -->
        <Border Grid.Column="1" Background="White" CornerRadius="8" 
          BoxShadow="0 2 8 0 #10000000">
-     <Grid RowDefinitions="Auto,*">
+  <Grid RowDefinitions="Auto,*">
           
        <!-- Header -->
       <Border Grid.Row="0" Background="#F8F9FA" Padding="16,12" 
@@ -162,24 +162,24 @@
            </Border>
 
     <!-- Content Area -->
-   <Grid Grid.Row="1" ColumnDefinitions="240,*" Margin="16">
+<Grid Grid.Row="1" ColumnDefinitions="240,*" Margin="16">
     
             <!-- Left: Cover Image -->
       <Border Grid.Column="0" Width="220" Height="220" 
-          CornerRadius="8" Background="#F0F0F0" 
+ CornerRadius="8" Background="#F0F0F0" 
   ClipToBounds="True" VerticalAlignment="Top"
     Margin="0,0,16,0" Cursor="Hand"
        Tapped="OnCoverImageTapped">
       <Panel>
-       <Image Source="{Binding CoverImage}" 
+ <Image Source="{Binding CoverImage}" 
       Stretch="UniformToFill"
 IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
        IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNull}}">
   <TextBlock Text="??" FontSize="48" HorizontalAlignment="Center" Opacity="0.5"/>
-       <TextBlock Text="Click to select cover" FontSize="11" 
+    <TextBlock Text="Click to select cover" FontSize="11" 
    Foreground="#999" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-      </StackPanel>
+    </StackPanel>
  </Panel>
       </Border>
 

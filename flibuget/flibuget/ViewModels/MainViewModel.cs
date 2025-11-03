@@ -104,7 +104,15 @@ public partial class MainViewModel : ViewModelBase
     public Func<Task<string?>>? ImageFilePickerFunc { get; set; }
 
     // Parameterless constructor for designer support
-    public MainViewModel() : this(null!, null!, null!, null!, null) { }
+    public MainViewModel()
+    {
+        // Designer mode - don't initialize services
+        _logger = null;
+        _serviceProvider = null;
+        _tagService = null;
+        _audiobookService = null;
+        _httpService = null;
+    }
 
     public MainViewModel(
         ILogger<MainViewModel> logger,
@@ -113,11 +121,11 @@ public partial class MainViewModel : ViewModelBase
         AudiobookService audiobookService,
         IWebService? httpService)
     {
-        _logger = logger ?? throw new ArgumentException(nameof(logger));
-        _serviceProvider = serviceProvider ?? throw new ArgumentException(nameof(serviceProvider));
-        _tagService = tagService ?? throw new ArgumentException(nameof(tagService));
-        _audiobookService = audiobookService ?? throw new ArgumentException(nameof(audiobookService));
-        _httpService = httpService ?? throw new ArgumentException(nameof(httpService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _tagService = tagService ?? throw new ArgumentNullException(nameof(tagService));
+        _audiobookService = audiobookService ?? throw new ArgumentNullException(nameof(audiobookService));
+        _httpService = httpService ?? throw new ArgumentNullException(nameof(httpService));
 
         _logger?.LogInformation("MainViewModel initialized");
     }
@@ -715,16 +723,14 @@ Return ONLY the JSON object, no additional text.";
 
         var answer = await (_audiobookService?.AskAsync(
                 prompt,
-                systemMessage: "You are a helpful assistant that returns only valid JSON responses."))
+                systemMessage: "You are a helpful assistant that returns only valid JSON responses.")!)
             .ConfigureAwait(false);
 
         // Strip markdown code blocks if present
         var cleanJson = StripMarkdownCodeBlocks(answer);
 
         // Deserialize to strongly-typed object
-        var result = JsonSerializer.Deserialize<AudiobookDescriptionDto>(cleanJson);
-        return result;
-
+        return JsonSerializer.Deserialize<AudiobookDescriptionDto>(cleanJson) ?? throw new InvalidOperationException("Can't get info from AI.");
     }
 
     /// <summary>
