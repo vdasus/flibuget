@@ -1,282 +1,332 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:vm="clr-namespace:flibuget.ViewModels"
-  xmlns:models="clr-namespace:flibuget.Models"
-    mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
- x:Class="flibuget.Views.MainView"
-      x:DataType="vm:MainViewModel">
- <Design.DataContext>
+        xmlns:vm="clr-namespace:flibuget.ViewModels"
+        xmlns:models="clr-namespace:flibuget.Models"
+     mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+    x:Class="flibuget.Views.MainView"
+        x:DataType="vm:MainViewModel">
+<Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
     <UserControl.Styles>
-   <!-- TextBox Styles -->
+        <!-- TextBox Styles -->
         <Style Selector="TextBox">
-            <Setter Property="Foreground" Value="#212529"/>
+       <Setter Property="Foreground" Value="#212529"/>
             <Setter Property="CaretBrush" Value="#4F8EF7"/>
- <Setter Property="SelectionBrush" Value="#4F8EF7"/>
+       <Setter Property="SelectionBrush" Value="#4F8EF7"/>
       <Setter Property="SelectionForegroundBrush" Value="White"/>
-            <Setter Property="Background" Value="White"/>
-  <Setter Property="BorderBrush" Value="#CED4DA"/>
-  <Setter Property="BorderThickness" Value="1"/>
+  <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#CED4DA"/>
+       <Setter Property="BorderThickness" Value="1"/>
    <Setter Property="Padding" Value="8,6"/>
-  <Setter Property="CornerRadius" Value="4"/>
+   <Setter Property="CornerRadius" Value="4"/>
         </Style>
 
-      <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-            <Setter Property="BorderBrush" Value="#4F8EF7"/>
-            <Setter Property="BorderThickness" Value="2"/>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+   <Setter Property="BorderBrush" Value="#4F8EF7"/>
+   <Setter Property="BorderThickness" Value="2"/>
         </Style>
 
-        <!-- Button Styles -->
+     <!-- Button Styles -->
         <Style Selector="Button">
             <Setter Property="Background" Value="#4F8EF7"/>
-            <Setter Property="Foreground" Value="White"/>
-        <Setter Property="Padding" Value="16,8"/>
+      <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,8"/>
       <Setter Property="CornerRadius" Value="4"/>
-         <Setter Property="BorderThickness" Value="0"/>
-    <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+<Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+  <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+          <Setter Property="Background" Value="#3A7DE8"/>
+        </Style>
+
+        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+          <Setter Property="Background" Value="#2E6BD6"/>
+    </Style>
+
+      <!-- ListBox Styles with alternating colors -->
+        <Style Selector="ListBoxItem">
+   <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Background" Value="#2B2B2B"/>
    </Style>
 
-        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#3A7DE8"/>
-        </Style>
-
-      <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#2E6BD6"/>
-        </Style>
-
-        <!-- ListBox Styles with alternating colors -->
-        <Style Selector="ListBoxItem">
-            <Setter Property="Padding" Value="12,8"/>
-          <Setter Property="Background" Value="#2B2B2B"/>
-        </Style>
-
-   <Style Selector="ListBoxItem:nth-child(2n)">
-     <Setter Property="Background" Value="#1E1E1E"/>
-        </Style>
+     <Style Selector="ListBoxItem:nth-child(2n)">
+            <Setter Property="Background" Value="#1E1E1E"/>
+  </Style>
 
         <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-<Setter Property="Background" Value="#4F8EF7"/>
+         <Setter Property="Background" Value="#4F8EF7"/>
         </Style>
 
         <Style Selector="ListBoxItem:selected:focus /template/ ContentPresenter">
-        <Setter Property="Background" Value="#3A7DE8"/>
-    </Style>
+  <Setter Property="Background" Value="#3A7DE8"/>
+  </Style>
 
-   <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-     <Setter Property="Background" Value="#3A3A3A"/>
-    </Style>
- </UserControl.Styles>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3A3A3A"/>
+  </Style>
+    </UserControl.Styles>
 
     <!-- Main Layout -->
     <DockPanel Background="#F5F5F5">
-        
-        <!-- Top Toolbar -->
+    
+      <!-- Top Toolbar -->
         <Border DockPanel.Dock="Top" Background="#2C2C2C" Padding="12,8" BoxShadow="0 2 4 0 #20000000">
-         <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="New project" Command="{Binding NewProjectCommand}" MinWidth="120"/>
-     <Button Content="Open project" Command="{Binding OpenProjectCommand}" MinWidth="120"/>
-     <Button Content="Save project" Command="{Binding SaveProjectCommand}" MinWidth="120"/>
-           <Button Content="Close Project" Command="{Binding CloseProjectCommand}" MinWidth="120"/>
+     <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Command="{Binding NewProjectCommand}" MinWidth="120">
+   <StackPanel Orientation="Horizontal" Spacing="6">
+   <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" Width="16" Height="16"/>
+               <TextBlock Text="New project" VerticalAlignment="Center"/>
     </StackPanel>
-     </Border>
+      </Button>
+      <Button Command="{Binding OpenProjectCommand}" MinWidth="120">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+     <PathIcon Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" Width="16" Height="16"/>
+    <TextBlock Text="Open project" VerticalAlignment="Center"/>
+               </StackPanel>
+                </Button>
+   <Button Command="{Binding SaveProjectCommand}" MinWidth="120">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+    <PathIcon Data="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" Width="16" Height="16"/>
+    <TextBlock Text="Save project" VerticalAlignment="Center"/>
+           </StackPanel>
+   </Button>
+ <Button Command="{Binding CloseProjectCommand}" MinWidth="120">
+    <StackPanel Orientation="Horizontal" Spacing="6">
+  <PathIcon Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Width="16" Height="16"/>
+ <TextBlock Text="Close Project" VerticalAlignment="Center"/>
+      </StackPanel>
+    </Button>
+        </StackPanel>
+        </Border>
 
-      <!-- Bottom Console Area -->
+        <!-- Bottom Console Area -->
         <Border DockPanel.Dock="Bottom" Background="#1E1E1E" BorderBrush="#3C3C3C" BorderThickness="0,1,0,0" Height="150">
       <DockPanel>
-    <TextBlock DockPanel.Dock="Top" Text="Console" Foreground="#CCCCCC" 
- Padding="12,8" FontWeight="SemiBold" Background="#252525"/>
-          <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <TextBox Text="{Binding ConsoleOutput}" 
-            IsReadOnly="True"
-      AcceptsReturn="True"
-       TextWrapping="Wrap"
-   BorderThickness="0"
-           Background="#1E1E1E"
-  Foreground="#CCCCCC"
-          FontFamily="Consolas"
-           FontSize="12"
-        Padding="12"/>
-   </ScrollViewer>
-     </DockPanel>
+ <TextBlock DockPanel.Dock="Top" Text="Console" Foreground="#CCCCCC" 
+   Padding="12,8" FontWeight="SemiBold" Background="#252525"/>
+   <ScrollViewer x:Name="ConsoleScrollViewer" VerticalScrollBarVisibility="Auto">
+      <TextBox Text="{Binding ConsoleOutput}" 
+               IsReadOnly="True"
+          AcceptsReturn="True"
+    TextWrapping="Wrap"
+        BorderThickness="0"
+         Background="#1E1E1E"
+             Foreground="#CCCCCC"
+        FontFamily="Consolas"
+              FontSize="12"
+         Padding="12"/>
+      </ScrollViewer>
+      </DockPanel>
         </Border>
 
-        <!-- Bottom Action Buttons -->
-        <Border DockPanel.Dock="Bottom" Background="#2C2C2C" Padding="12,8" BorderBrush="#3C3C3C" BorderThickness="0,1,0,0">
-            <Grid RowDefinitions="Auto,Auto">
-           <!-- First Row: Selection Buttons -->
-       <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-         <Button Content="SELECT ALL" Command="{Binding SelectAllCommand}" MinWidth="100"/>
-                  <Button Content="CLEAR SELECTION" Command="{Binding ClearSelectionCommand}" MinWidth="130"/>
-                </StackPanel>
-         
-             <!-- Second Row: Action Buttons -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
- <Button Content="Get info from AI" Command="{Binding GetInfoFromAICommand}" MinWidth="130"/>
-     <Button Content="Get info from selected file" Command="{Binding GetInfoFromSelectedFileCommand}" MinWidth="180"/>
-        <Button Content="Set tags into selected files" Command="{Binding SetTagsIntoSelectedFilesCommand}" MinWidth="180"/>
-    <Button Content="Undo" Command="{Binding UndoCommand}" MinWidth="80"/>
-     </StackPanel>
-            </Grid>
-        </Border>
-
- <!-- Main Content Area -->
-        <Grid ColumnDefinitions="300,*" Margin="12">
-  
-  <!-- Left Panel - File List -->
-       <Border Grid.Column="0" Background="White" CornerRadius="8" 
-          BoxShadow="0 2 8 0 #10000000" Margin="0,0,12,0">
-   <DockPanel>
-    <TextBlock DockPanel.Dock="Top" Text="File list of audiobook" 
-        Foreground="#2C3E50" FontWeight="SemiBold" FontSize="14"
-   Padding="16,12" Background="#F8F9FA"/>
-              
-      <ListBox ItemsSource="{Binding AudioFiles}"
-         SelectedItem="{Binding SelectedFile}"
-    Background="#1E1E1E"
-       BorderThickness="0">
-          <ListBox.ItemTemplate>
-      <DataTemplate DataType="models:AudiobookFile">
-     <CheckBox IsChecked="{Binding IsSelected}"
-             Content="{Binding FileName}"
-            Foreground="#E0E0E0"/>
-   </DataTemplate>
-       </ListBox.ItemTemplate>
-        </ListBox>
-           </DockPanel>
-      </Border>
-
-   <!-- Right Panel - Tag Editor and Cover -->
-       <Border Grid.Column="1" Background="White" CornerRadius="8" 
-         BoxShadow="0 2 8 0 #10000000">
-  <Grid RowDefinitions="Auto,*">
-          
-       <!-- Header -->
-      <Border Grid.Row="0" Background="#F8F9FA" Padding="16,12" 
-      BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-    <TextBlock Text="Audiobook Details" FontWeight="SemiBold" 
-          FontSize="16" Foreground="#2C3E50"/>
-           </Border>
-
-    <!-- Content Area -->
-<Grid Grid.Row="1" ColumnDefinitions="240,*" Margin="16">
-    
-            <!-- Left: Cover Image -->
-      <Border Grid.Column="0" Width="220" Height="220" 
- CornerRadius="8" Background="#F0F0F0" 
-  ClipToBounds="True" VerticalAlignment="Top"
-    Margin="0,0,16,0" Cursor="Hand"
-       Tapped="OnCoverImageTapped">
-      <Panel>
- <Image Source="{Binding CoverImage}" 
-      Stretch="UniformToFill"
-IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-       <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-       IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNull}}">
-  <TextBlock Text="??" FontSize="48" HorizontalAlignment="Center" Opacity="0.5"/>
-    <TextBlock Text="Click to select cover" FontSize="11" 
-   Foreground="#999" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-    </StackPanel>
- </Panel>
-      </Border>
-
-        <!-- Right: Tag Fields -->
-        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-      <StackPanel Spacing="12">
-           
-                  <!-- Author -->
-        <StackPanel>
-       <TextBlock Text="Author" FontWeight="Medium" 
-      Foreground="#555" Margin="0,0,0,4"/>
-         <TextBox Text="{Binding Author}" Watermark="Author name"/>
-   </StackPanel>
-
-        <!-- Title -->
-<StackPanel>
-         <TextBlock Text="Title" FontWeight="Medium" 
-                   Foreground="#555" Margin="0,0,0,4"/>
-    <TextBox Text="{Binding Title}" Watermark="Book title"/>
-   </StackPanel>
-
-       <!-- Album -->
-        <StackPanel>
-        <TextBlock Text="Album" FontWeight="Medium" 
-    Foreground="#555" Margin="0,0,0,4"/>
-      <TextBox Text="{Binding Album}" Watermark="Album name"/>
-      </StackPanel>
-
-           <!-- Year & Genre -->
-        <Grid ColumnDefinitions="*,12,*">
-          <StackPanel Grid.Column="0">
-          <TextBlock Text="Year" FontWeight="Medium" 
-               Foreground="#555" Margin="0,0,0,4"/>
-      <TextBox Text="{Binding Year}" Watermark="2024"/>
-    </StackPanel>
-       
-       <StackPanel Grid.Column="2">
-        <TextBlock Text="Genre" FontWeight="Medium" 
-            Foreground="#555" Margin="0,0,0,4"/>
-        <TextBox Text="{Binding Genre}" Watermark="Audiobook"/>
-      </StackPanel>
-     </Grid>
-
-     <!-- Narrator -->
-       <StackPanel>
-         <TextBlock Text="Narrator" FontWeight="Medium" 
-              Foreground="#555" Margin="0,0,0,4"/>
-             <TextBox Text="{Binding Narrator}" Watermark="Narrator name"/>
+    <!-- Bottom Action Buttons -->
+     <Border DockPanel.Dock="Bottom" Background="#2C2C2C" Padding="12,8" BorderBrush="#3C3C3C" BorderThickness="0,1,0,0">
+<Grid RowDefinitions="Auto,Auto">
+    <!-- First Row: Selection Buttons -->
+  <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+    <Button Command="{Binding SelectAllCommand}" MinWidth="100">
+         <StackPanel Orientation="Horizontal" Spacing="6">
+      <PathIcon Data="M10,17L5,12L6.41,10.58L10,14.17L17.59,6.58L19,8M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z" Width="16" Height="16"/>
+<TextBlock Text="SELECT ALL" VerticalAlignment="Center"/>
           </StackPanel>
-
-     <!-- Producer -->
-      <StackPanel>
-   <TextBlock Text="Producer" FontWeight="Medium" 
-       Foreground="#555" Margin="0,0,0,4"/>
-   <TextBox Text="{Binding Producer}" Watermark="Producer name"/>
+   </Button>
+        <Button Command="{Binding ClearSelectionCommand}" MinWidth="130">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+          <PathIcon Data="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z" Width="16" Height="16"/>
+      <TextBlock Text="CLEAR SELECTION" VerticalAlignment="Center"/>
+        </StackPanel>
+     </Button>
+    </StackPanel>
+        
+      <!-- Second Row: Action Buttons -->
+   <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+           <Button Command="{Binding GetInfoFromAICommand}" MinWidth="130">
+         <StackPanel Orientation="Horizontal" Spacing="6">
+     <PathIcon Data="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" Width="16" Height="16"/>
+      <TextBlock Text="Get info from AI" VerticalAlignment="Center"/>
+          </StackPanel>
+</Button>
+       <Button Command="{Binding GetInfoFromSelectedFileCommand}" MinWidth="180">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+     <PathIcon Data="M16.5,5.5V18.5L12,15.5L7.5,18.5V5.5H16.5M18,3H6A1,1 0 0,0 5,4V21L12,18L19,21V4A1,1 0 0,0 18,3Z" Width="16" Height="16"/>
+        <TextBlock Text="Get info from selected file" VerticalAlignment="Center"/>
+        </StackPanel>
+  </Button>
+      <Button Command="{Binding SetTagsIntoSelectedFilesCommand}" MinWidth="180">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+       <PathIcon Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" Width="16" Height="16"/>
+<TextBlock Text="Set tags into selected files" VerticalAlignment="Center"/>
   </StackPanel>
-
-        <!-- Publisher -->
-          <StackPanel>
-                 <TextBlock Text="Publisher" FontWeight="Medium" 
-          Foreground="#555" Margin="0,0,0,4"/>
-              <TextBox Text="{Binding Publisher}" Watermark="Publisher name"/>
-              </StackPanel>
-
-  <!-- Copyright -->
-        <StackPanel>
-          <TextBlock Text="Copyright" FontWeight="Medium" 
-      Foreground="#555" Margin="0,0,0,4"/>
- <TextBox Text="{Binding Copyright}" Watermark="Copyright information"/>
+     </Button>
+         <Button Command="{Binding UndoCommand}" MinWidth="80">
+ <StackPanel Orientation="Horizontal" Spacing="6">
+      <PathIcon Data="M12.5,8C9.85,8 7.45,9 5.6,10.6L2,7V16H11L7.38,12.38C8.77,11.22 10.54,10.5 12.5,10.5C16.04,10.5 19.05,12.81 20.1,16L22.47,15.22C21.08,11.03 17.15,8 12.5,8Z" Width="16" Height="16"/>
+        <TextBlock Text="Undo" VerticalAlignment="Center"/>
+  </StackPanel>
+ </Button>
            </StackPanel>
-
-       <!-- ASIN -->
-    <StackPanel>
- <TextBlock Text="ASIN" FontWeight="Medium" 
-        Foreground="#555" Margin="0,0,0,4"/>
-    <TextBox Text="{Binding Asin}" Watermark="Amazon ASIN"/>
-         </StackPanel>
-
- <!-- Comment -->
-           <StackPanel>
-          <TextBlock Text="Comment / Description" FontWeight="Medium" 
-         Foreground="#555" Margin="0,0,0,4"/>
-            <TextBox Text="{Binding Comment}" 
-                  Watermark="Additional notes or description"
-         AcceptsReturn="True"
-                TextWrapping="Wrap"
-          MinHeight="80"/>
-       </StackPanel>
-
-   </StackPanel>
-             </ScrollViewer>
-
-  </Grid>
      </Grid>
+   </Border>
+
+     <!-- Main Content Area -->
+        <Grid ColumnDefinitions="300,*" Margin="12">
+            
+            <!-- Left Panel - File List -->
+            <Border Grid.Column="0" Background="White" CornerRadius="8" 
+ BoxShadow="0 2 8 0 #10000000" Margin="0,0,12,0">
+    <DockPanel>
+  <TextBlock DockPanel.Dock="Top" Text="File list of audiobook" 
+         Foreground="#2C3E50" FontWeight="SemiBold" FontSize="14"
+     Padding="16,12" Background="#F8F9FA"/>
+      
+       <ListBox ItemsSource="{Binding AudioFiles}"
+        SelectedItem="{Binding SelectedFile}"
+ Background="#1E1E1E"
+    BorderThickness="0">
+     <ListBox.ItemTemplate>
+          <DataTemplate DataType="models:AudiobookFile">
+          <CheckBox IsChecked="{Binding IsSelected}"
+     Content="{Binding FileName}"
+    Foreground="#E0E0E0"/>
+         </DataTemplate>
+       </ListBox.ItemTemplate>
+       </ListBox>
+           </DockPanel>
+ </Border>
+
+    <!-- Right Panel - Tag Editor and Cover -->
+  <Border Grid.Column="1" Background="White" CornerRadius="8" 
+        BoxShadow="0 2 8 0 #10000000">
+       <Grid RowDefinitions="Auto,*">
+        
+     <!-- Header -->
+           <Border Grid.Row="0" Background="#F8F9FA" Padding="16,12" 
+   BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+        <TextBlock Text="Audiobook Details" FontWeight="SemiBold" 
+             FontSize="16" Foreground="#2C3E50"/>
+      </Border>
+
+ <!-- Content Area -->
+  <Grid Grid.Row="1" ColumnDefinitions="240,*" Margin="16">
+             
+     <!-- Left: Cover Image -->
+            <Border Grid.Column="0" Width="220" Height="220" 
+          CornerRadius="8" Background="#F0F0F0" 
+ ClipToBounds="True" VerticalAlignment="Top"
+         Margin="0,0,16,0" Cursor="Hand"
+            Tapped="OnCoverImageTapped">
+      <Panel>
+            <Image Source="{Binding CoverImage}" 
+   Stretch="UniformToFill"
+       IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+        IsVisible="{Binding CoverImage, Converter={x:Static ObjectConverters.IsNull}}">
+    <PathIcon Data="M13,9H18.5L13,3.5V9M6,2H14L20,8V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V4C4,2.89 4.89,2 6,2M15,18V16H6V18H15M18,14V12H6V14H18Z" Width="64" Height="64" Opacity="0.5"/>
+         <TextBlock Text="Click to select cover" FontSize="11" 
+   Foreground="#999" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+        </StackPanel>
+    </Panel>
   </Border>
 
+  <!-- Right: Tag Fields -->
+          <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+         <StackPanel Spacing="12">
+    
+            <!-- Author -->
+        <StackPanel>
+          <TextBlock Text="Author" FontWeight="Medium" 
+ Foreground="#555" Margin="0,0,0,4"/>
+             <TextBox Text="{Binding Author}" Watermark="Author name"/>
+   </StackPanel>
+
+          <!-- Title -->
+         <StackPanel>
+      <TextBlock Text="Title" FontWeight="Medium" 
+            Foreground="#555" Margin="0,0,0,4"/>
+       <TextBox Text="{Binding Title}" Watermark="Book title"/>
+       </StackPanel>
+
+        <!-- Album -->
+     <StackPanel>
+      <TextBlock Text="Album" FontWeight="Medium" 
+          Foreground="#555" Margin="0,0,0,4"/>
+      <TextBox Text="{Binding Album}" Watermark="Album name"/>
+           </StackPanel>
+
+       <!-- Year & Genre -->
+       <Grid ColumnDefinitions="*,12,*">
+          <StackPanel Grid.Column="0">
+           <TextBlock Text="Year" FontWeight="Medium" 
+     Foreground="#555" Margin="0,0,0,4"/>
+       <TextBox Text="{Binding Year}" Watermark="2024"/>
+            </StackPanel>
+             
+    <StackPanel Grid.Column="2">
+       <TextBlock Text="Genre" FontWeight="Medium" 
+     Foreground="#555" Margin="0,0,0,4"/>
+     <TextBox Text="{Binding Genre}" Watermark="Audiobook"/>
+   </StackPanel>
+    </Grid>
+
+                   <!-- Narrator -->
+          <StackPanel>
+      <TextBlock Text="Narrator" FontWeight="Medium" 
+         Foreground="#555" Margin="0,0,0,4"/>
+        <TextBox Text="{Binding Narrator}" Watermark="Narrator name"/>
+         </StackPanel>
+
+  <!-- Producer -->
+    <StackPanel>
+         <TextBlock Text="Producer" FontWeight="Medium" 
+              Foreground="#555" Margin="0,0,0,4"/>
+ <TextBox Text="{Binding Producer}" Watermark="Producer name"/>
+             </StackPanel>
+
+     <!-- Publisher -->
+        <StackPanel>
+       <TextBlock Text="Publisher" FontWeight="Medium" 
+       Foreground="#555" Margin="0,0,0,4"/>
+    <TextBox Text="{Binding Publisher}" Watermark="Publisher name"/>
+    </StackPanel>
+
+   <!-- Copyright -->
+  <StackPanel>
+             <TextBlock Text="Copyright" FontWeight="Medium" 
+           Foreground="#555" Margin="0,0,0,4"/>
+ <TextBox Text="{Binding Copyright}" Watermark="Copyright information"/>
+               </StackPanel>
+
+           <!-- ASIN -->
+<StackPanel>
+         <TextBlock Text="ASIN" FontWeight="Medium" 
+         Foreground="#555" Margin="0,0,0,4"/>
+             <TextBox Text="{Binding Asin}" Watermark="Amazon ASIN"/>
+   </StackPanel>
+
+<!-- Comment -->
+          <StackPanel>
+                 <TextBlock Text="Comment / Description" FontWeight="Medium" 
+   Foreground="#555" Margin="0,0,0,4"/>
+             <TextBox Text="{Binding Comment}" 
+           Watermark="Additional notes or description"
+  AcceptsReturn="True"
+         TextWrapping="Wrap"
+         MinHeight="80"/>
+        </StackPanel>
+
+      </StackPanel>
+              </ScrollViewer>
+
    </Grid>
+              </Grid>
+            </Border>
+
+        </Grid>
 
     </DockPanel>
 </UserControl>

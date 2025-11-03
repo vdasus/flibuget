@@ -1,8 +1,11 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using flibuget.ViewModels;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace flibuget.Views;
@@ -17,13 +20,27 @@ public partial class MainView : UserControl
 
     private void MainView_DataContextChanged(object? sender, System.EventArgs e)
     {
-        if (DataContext is MainViewModel viewModel)
+        if (DataContext is not MainViewModel viewModel) return;
+
+        // Wire up file picker functions
+        viewModel.FolderPickerFunc = PickFolderAsync;
+        viewModel.SaveFilePickerFunc = PickSaveFileAsync;
+        viewModel.ImageFilePickerFunc = PickImageFileAsync;
+
+        // Subscribe to ConsoleOutput changes for autoscroll
+        viewModel.PropertyChanged += ViewModel_PropertyChanged;
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(MainViewModel.ConsoleOutput)) return;
+
+        // Marshal to UI thread to avoid threading exceptions
+        Dispatcher.UIThread.InvokeAsync(() =>
         {
-            // Wire up file picker functions
-            viewModel.FolderPickerFunc = PickFolderAsync;
-            viewModel.SaveFilePickerFunc = PickSaveFileAsync;
-            viewModel.ImageFilePickerFunc = PickImageFileAsync;
-        }
+            var scrollViewer = this.FindControl<ScrollViewer>("ConsoleScrollViewer");
+            scrollViewer?.ScrollToEnd();
+        });
     }
 
     private async Task<string?> PickFolderAsync()
@@ -85,10 +102,9 @@ public partial class MainView : UserControl
 
     private async void OnCoverImageTapped(object? sender, TappedEventArgs e)
     {
-        if (DataContext is MainViewModel viewModel)
-        {
-            await viewModel.SelectCoverImageCommand.ExecuteAsync(null).ConfigureAwait(false);
-        }
+        if (DataContext is not MainViewModel viewModel) return;
+
+        await viewModel.SelectCoverImageCommand.ExecuteAsync(null).ConfigureAwait(false);
     }
 
     // Added missing InitializeComponent so NCrunch/build can find it
