@@ -1,16 +1,21 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using flibuget.Core.Domain.DTO;
+using flibuget.Core.DomainServices;
 using flibuget.Core.Examples;
+using flibuget.Core.InfraServices.AudioTags;
+using flibuget.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
-using flibuget.Core.InfraServices.AudioTags; // added
-using System.Text; // added
 
 namespace flibuget.ViewModels;
 
@@ -19,112 +24,283 @@ public partial class MainViewModel : ViewModelBase
 {
     private readonly ILogger<MainViewModel>? _logger;
     private readonly IServiceProvider? _serviceProvider;
-    private readonly IAudioTagService? _tagService; // added
+    private readonly IAudioTagService? _tagService;
+    private readonly AudiobookService? _audiobookService;
     private static readonly HttpClient _httpClient = new();
 
-    [ObservableProperty]
-    private string greeting = "Flibuget!";
+    // Supported audio file extensions
+    private static readonly string[] AudioExtensions = [".mp3", ".m4a", ".m4b", ".flac", ".wav", ".ogg", ".wma", ".aac"];
 
+    // File list
+    [ObservableProperty]
+    private ObservableCollection<AudiobookFile> audioFiles = [];
+
+    [ObservableProperty]
+    private AudiobookFile? selectedFile;
+
+    // Tag fields - editable
     [ObservableProperty]
     private string author = string.Empty;
 
     [ObservableProperty]
-    private string book = string.Empty;
+    private string title = string.Empty;
 
     [ObservableProperty]
-    private string result = string.Empty;
+    private string album = string.Empty;
 
     [ObservableProperty]
-    private string imageUrl = string.Empty;
+    private string? year;
+
+    [ObservableProperty]
+    private string genre = string.Empty;
+
+    [ObservableProperty]
+    private string narrator = string.Empty;
+
+    [ObservableProperty]
+    private string producer = string.Empty;
+
+    [ObservableProperty]
+    private string copyright = string.Empty;
+
+    [ObservableProperty]
+    private string publisher = string.Empty;
+
+    [ObservableProperty]
+    private string comment = string.Empty;
+
+    [ObservableProperty]
+    private string asin = string.Empty;
 
     [ObservableProperty]
     private Bitmap? coverImage;
 
-    public object ClickCommand { get; }
-    public object TestCommand { get; }
+    [ObservableProperty]
+    private string coverImagePath = string.Empty;
+
+    // Console/log output
+    [ObservableProperty]
+    private string consoleOutput = string.Empty;
+
+    // Current project state
+    [ObservableProperty]
+    private string currentFolderPath = string.Empty;
+
+    [ObservableProperty]
+    private string currentProjectPath = string.Empty;
+
+    // Track original tags for undo functionality
+    private Dictionary<string, AudiobookTagDto> _originalTags = new();
+    private Dictionary<string, AudiobookTagDto> _backupTags = new();
+
+    // File picker delegates
+    public Func<Task<string?>>? FolderPickerFunc { get; set; }
+    public Func<Task<string?>>? SaveFilePickerFunc { get; set; }
+    public Func<Task<string?>>? ImageFilePickerFunc { get; set; }
 
     // Parameterless constructor for designer support
-    public MainViewModel() : this(null!, null!, null!) { }
+    public MainViewModel() : this(null!, null!, null!, null!) { }
 
-    // Backward compatibility constructor (tests still use this)
-    public MainViewModel(ILogger<MainViewModel> logger, IServiceProvider serviceProvider)
-        : this(logger, serviceProvider, null!) { }
-
-    public MainViewModel(ILogger<MainViewModel> logger, IServiceProvider serviceProvider, IAudioTagService tagService)
+    public MainViewModel(
+        ILogger<MainViewModel> logger,
+        IServiceProvider serviceProvider,
+IAudioTagService tagService,
+        AudiobookService audiobookService)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
-        _tagService = tagService; // may be null in tests / design
+        _tagService = tagService;
+        _audiobookService = audiobookService;
 
         _logger?.LogInformation("MainViewModel initialized");
-        _logger?.LogDebug("Greeting message: {Greeting}", Greeting);
-
-        _logger?.LogInformation("Application started for user {UserName} on machine {MachineName}",
-              Environment.UserName,
-              Environment.MachineName);
-
-        ClickCommand = new AsyncRelayCommand(OnButtonClickAsync);
-        TestCommand = new AsyncRelayCommand(OnTestButtonClickAsync);
     }
 
-    private Task OnTestButtonClickAsync()
+    #region Project Commands
+
+    [RelayCommand]
+    private Task NewProjectAsync()
     {
-        if (_tagService == null)
+        try
         {
-            Result = "Tag service not configured";
-            return Task.CompletedTask;
+            LogToConsole("Creating new project...");
+            ClearProject();
+            LogToConsole("New project created. Use 'Open Project' to load audiobook files.");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error creating new project");
+            LogToConsole($"Error: {ex.Message}");
         }
 
-        var file = "D:\\_TEMP\\mp3tag\\temp\\01_Opergruppa_v_beriozovke.mp3";
-        var tmp = _tagService.Read(file.Trim());
-
-        if (tmp == null)
-        {
-            Result = "No tags found";
-            return Task.CompletedTask;
-        }
-
-        // Build multiline string with all fields
-        var sb = new StringBuilder();
-        sb.AppendLine($"Author: {tmp.Author}");
-        sb.AppendLine($"Title: {tmp.Title}");
-        sb.AppendLine($"Album: {tmp.Album}");
-        sb.AppendLine($"TrackNumber: {(tmp.TrackNumber.HasValue ? tmp.TrackNumber.Value.ToString() : "-")}");
-        sb.AppendLine($"Year: {(tmp.Year.HasValue ? tmp.Year.Value.ToString() : "-")}");
-        sb.AppendLine($"Genre: {tmp.Genre}");
-        sb.AppendLine($"Narrator: {tmp.Narrator}");
-        sb.AppendLine($"Producer: {tmp.Producer}");
-        sb.AppendLine($"Copyright: {tmp.Copyright}");
-        sb.AppendLine($"Publisher: {tmp.Publisher}");
-        sb.AppendLine($"Comment: {tmp.Comment}");
-        sb.AppendLine($"ASIN: {tmp.ASIN}");
-        sb.AppendLine($"CoverImageUrl: {tmp.CoverImageUrl}");
-
-        Result = sb.ToString();
         return Task.CompletedTask;
     }
 
-    private async Task OnButtonClickAsync()
+    [RelayCommand]
+    private async Task OpenProjectAsync()
     {
-        Result = $"Searching for: {Book} by {Author}...";
-        ImageUrl = string.Empty;
-        CoverImage = null;
-
         try
         {
-            if (_serviceProvider == null)
+            // Open folder picker
+            var folder = await PickFolderAsync().ConfigureAwait(false);
+            if (folder == null)
             {
-                Result = "Service provider not available (design mode)";
+                LogToConsole("Folder selection cancelled.");
                 return;
             }
 
-            var dto = await AIServiceUsageExamplesForAudiobooks.Example3_AudioBookStructuredJsonResponseAsync(_serviceProvider, Book, Author).ConfigureAwait(true);
-            Result =
-                $"Title: {dto.Title}\nAuthor: {dto.Author}\nDuration: {dto.Duration}\nNarrator: {dto.Narrator}\nAge Restriction: {dto.AgeRestriction}\nDescription: {dto.Description}\nThemes: {string.Join(", ", dto.Themes ?? new List<string>())}\nLink: {dto.Link}\nImgUrl: {dto.CoverLink}";
+            CurrentFolderPath = folder;
+            LogToConsole($"Loading audiobook files from: {folder}");
 
-            ImageUrl = dto.CoverLink ?? string.Empty;
 
-            // Load image from URL
+            // Load audio files from folder
+            var files = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories)
+           .Where(f => AudioExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                  .OrderBy(f => f)
+             .ToList();
+
+            AudioFiles.Clear();
+            foreach (var file in files)
+            {
+                AudioFiles.Add(new AudiobookFile(file));
+            }
+
+            LogToConsole($"Loaded {AudioFiles.Count} audio file(s).");
+
+            // Clear tag fields
+            ClearTagFields();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error opening project");
+            LogToConsole($"Error opening project: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task SaveProjectAsync()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(CurrentFolderPath))
+            {
+                LogToConsole("No project loaded. Please open a folder first.");
+                return;
+            }
+
+            var file = await PickSaveFileAsync().ConfigureAwait(false);
+            if (file == null)
+            {
+                LogToConsole("Save cancelled.");
+                return;
+            }
+
+            var project = new AudiobookProject
+            {
+                FolderPath = CurrentFolderPath,
+                Author = Author,
+                Title = Title,
+                Album = Album,
+                Year = int.TryParse(Year, out var y) ? y : null,
+                Genre = Genre,
+                Narrator = Narrator,
+                Producer = Producer,
+                Copyright = Copyright,
+                Publisher = Publisher,
+                Comment = Comment,
+                ASIN = Asin,
+                CoverImagePath = CoverImagePath
+            };
+
+            var json = JsonSerializer.Serialize(project, new JsonSerializerOptions { WriteIndented = true });
+            await File.WriteAllTextAsync(file, json).ConfigureAwait(false);
+
+            CurrentProjectPath = file;
+            LogToConsole($"Project saved to: {file}");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error saving project");
+            LogToConsole($"Error saving project: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private Task CloseProjectAsync()
+    {
+        try
+        {
+            LogToConsole("Closing project...");
+            ClearProject();
+            LogToConsole("Project closed.");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error closing project");
+            LogToConsole($"Error: {ex.Message}");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    #endregion
+
+    #region Selection Commands
+
+    [RelayCommand]
+    private void SelectAll()
+    {
+        foreach (var file in AudioFiles)
+        {
+            file.IsSelected = true;
+        }
+        LogToConsole($"Selected all {AudioFiles.Count} file(s).");
+    }
+
+    [RelayCommand]
+    private void ClearSelection()
+    {
+        foreach (var file in AudioFiles)
+        {
+            file.IsSelected = false;
+        }
+        LogToConsole("Selection cleared.");
+    }
+
+    #endregion
+
+    #region Tag Commands
+
+    [RelayCommand]
+    private async Task GetInfoFromAIAsync()
+    {
+        try
+        {
+            if (_audiobookService == null || _serviceProvider == null)
+            {
+                LogToConsole("AI service not available.");
+                return;
+            }
+
+            LogToConsole("Fetching audiobook information from AI...");
+
+            // Use author and title/album as search terms
+            var searchAuthor = !string.IsNullOrWhiteSpace(Author) ? Author : "Unknown";
+            var searchTitle = !string.IsNullOrWhiteSpace(Album) ? Album :
+            !string.IsNullOrWhiteSpace(Title) ? Title : "Unknown";
+
+            var dto = await AIServiceUsageExamplesForAudiobooks
+            .Example3_AudioBookStructuredJsonResponseAsync(_serviceProvider, searchTitle, searchAuthor)
+   .ConfigureAwait(true);
+
+            // Map AI response to tag fields
+            Author = dto.Author ?? Author;
+            Title = dto.Title ?? Title;
+            Album = dto.Title ?? Album; // AI returns book title, use it for album
+            Narrator = dto.Narrator ?? Narrator;
+            Comment = dto.Description ?? Comment;
+            Genre = "Audiobook";
+
+            // Load cover image
             if (!string.IsNullOrWhiteSpace(dto.CoverLink))
             {
                 try
@@ -132,20 +308,331 @@ public partial class MainViewModel : ViewModelBase
                     var imageBytes = await _httpClient.GetByteArrayAsync(dto.CoverLink).ConfigureAwait(false);
                     using var ms = new MemoryStream(imageBytes);
                     CoverImage = new Bitmap(ms);
+                    CoverImagePath = dto.CoverLink;
+                    LogToConsole("Cover image loaded from AI response.");
                 }
                 catch (Exception ex)
                 {
-                    _logger?.LogWarning(ex, "Failed to load cover image from {Url}", dto.CoverLink);
-                    CoverImage = null;
+                    _logger?.LogWarning(ex, "Failed to load cover image");
+                    LogToConsole("Warning: Could not load cover image.");
+                }
+            }
+
+            LogToConsole("AI data loaded successfully.");
+            LogToConsole($"Title: {dto.Title}");
+            LogToConsole($"Author: {dto.Author}");
+            LogToConsole($"Narrator: {dto.Narrator}");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error fetching data from AI");
+            LogToConsole($"Error: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private Task GetInfoFromSelectedFileAsync()
+    {
+        try
+        {
+            if (_tagService == null)
+            {
+                LogToConsole("Tag service not available.");
+                return Task.CompletedTask;
+            }
+
+            var selectedFiles = AudioFiles.Where(f => f.IsSelected).ToList();
+            if (selectedFiles.Count == 0)
+            {
+                LogToConsole("No files selected. Please select at least one file.");
+                return Task.CompletedTask;
+            }
+
+            LogToConsole($"Reading tags from {selectedFiles.Count} file(s)...");
+
+            if (selectedFiles.Count == 1)
+            {
+                // Single file - load all tags
+                var tags = _tagService.Read(selectedFiles[0].FilePath);
+                if (tags != null)
+                {
+                    PopulateTagFields(tags);
+                    LogToConsole($"Tags loaded from: {selectedFiles[0].FileName}");
+                }
+            }
+            else
+            {
+                // Multiple files - show common values or <multiple>
+                var allTags = selectedFiles
+            .Select(f => _tagService.Read(f.FilePath))
+              .Where(t => t != null)
+                  .ToList();
+
+                if (allTags.Count > 0)
+                {
+                    MergeTagsFromMultipleFiles(allTags!);
+                    LogToConsole($"Tags merged from {allTags.Count} file(s). Fields with different values show '<multiple>'.");
                 }
             }
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error fetching audiobook data");
-            Result = $"Error fetching data: {ex.Message}";
-            ImageUrl = string.Empty;
-            CoverImage = null;
+            _logger?.LogError(ex, "Error reading tags");
+            LogToConsole($"Error reading tags: {ex.Message}");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private Task SetTagsIntoSelectedFilesAsync()
+    {
+        try
+        {
+            if (_tagService == null)
+            {
+                LogToConsole("Tag service not available.");
+                return Task.CompletedTask;
+            }
+
+            var selectedFiles = AudioFiles.Where(f => f.IsSelected).ToList();
+            if (selectedFiles.Count == 0)
+            {
+                LogToConsole("No files selected. Please select files to update.");
+                return Task.CompletedTask;
+            }
+
+            LogToConsole($"Writing tags to {selectedFiles.Count} file(s)...");
+
+            // Backup original tags for undo
+            _backupTags.Clear();
+            foreach (var file in selectedFiles)
+            {
+                var originalTags = _tagService.Read(file.FilePath);
+                if (originalTags != null)
+                {
+                    _backupTags[file.FilePath] = originalTags;
+                }
+            }
+
+            // Create tag DTO from current fields (skip <multiple> placeholders and empty values)
+            var tags = CreateTagDtoFromFields();
+
+            // Log what we're about to write
+            LogToConsole($"Tags to write - Author: '{tags.Author}', Title: '{tags.Title}', Album: '{tags.Album}', Narrator: '{tags.Narrator}'");
+
+            int successCount = 0;
+            foreach (var file in selectedFiles)
+            {
+                try
+                {
+                    // Use overwriteExisting: true to ensure values are written
+                    // CreateTagDtoFromFields already filters out <multiple> and empty values
+                    _tagService.Write(file.FilePath, tags, overwriteExisting: true);
+                    successCount++;
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogWarning(ex, "Failed to write tags to {File}", file.FileName);
+                    LogToConsole($"Warning: Failed to write tags to {file.FileName}");
+                }
+            }
+
+            LogToConsole($"Tags written to {successCount} file(s) successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error writing tags");
+            LogToConsole($"Error writing tags: {ex.Message}");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private Task UndoAsync()
+    {
+        try
+        {
+            if (_tagService == null)
+            {
+                LogToConsole("Tag service not available.");
+                return Task.CompletedTask;
+            }
+
+            if (_backupTags.Count == 0)
+            {
+                LogToConsole("No changes to undo.");
+                return Task.CompletedTask;
+            }
+
+            LogToConsole($"Reverting changes to {_backupTags.Count} file(s)...");
+
+            int successCount = 0;
+            foreach (var kvp in _backupTags)
+            {
+                try
+                {
+                    _tagService.Write(kvp.Key, kvp.Value, overwriteExisting: true);
+                    successCount++;
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogWarning(ex, "Failed to revert {File}", kvp.Key);
+                    LogToConsole($"Warning: Failed to revert {Path.GetFileName(kvp.Key)}");
+                }
+            }
+
+            _backupTags.Clear();
+            LogToConsole($"Reverted changes to {successCount} file(s).");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error during undo")
+            ; LogToConsole($"Error during undo: {ex.Message}");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private async Task SelectCoverImageAsync()
+    {
+        try
+        {
+            var file = await PickImageFileAsync().ConfigureAwait(false);
+            if (file == null)
+            {
+                return;
+            }
+
+            CoverImagePath = file;
+            CoverImage = new Bitmap(file);
+            LogToConsole($"Cover image loaded: {Path.GetFileName(file)}");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error loading cover image");
+            LogToConsole($"Error loading cover image: {ex.Message}");
         }
     }
+
+    #endregion
+
+    #region Helper Methods
+
+    private void PopulateTagFields(AudiobookTagDto tags)
+    {
+        Author = tags.Author ?? string.Empty;
+        Title = tags.Title ?? string.Empty;
+        Album = tags.Album ?? string.Empty;
+        Year = tags.Year?.ToString() ?? string.Empty;
+        Genre = tags.Genre ?? string.Empty;
+        Narrator = tags.Narrator ?? string.Empty;
+        Producer = tags.Producer ?? string.Empty;
+        Copyright = tags.Copyright ?? string.Empty;
+        Publisher = tags.Publisher ?? string.Empty;
+        Comment = tags.Comment ?? string.Empty;
+        Asin = tags.ASIN ?? string.Empty;
+    }
+
+    private void MergeTagsFromMultipleFiles(List<AudiobookTagDto> allTags)
+    {
+        const string multiplePlaceholder = "<multiple>";
+
+        Author = GetCommonValue(allTags.Select(t => t.Author), multiplePlaceholder);
+        Title = GetCommonValue(allTags.Select(t => t.Title), multiplePlaceholder);
+        Album = GetCommonValue(allTags.Select(t => t.Album), multiplePlaceholder);
+        Year = GetCommonValue(allTags.Select(t => t.Year?.ToString() ?? string.Empty), multiplePlaceholder);
+        Genre = GetCommonValue(allTags.Select(t => t.Genre), multiplePlaceholder);
+        Narrator = GetCommonValue(allTags.Select(t => t.Narrator), multiplePlaceholder);
+        Producer = GetCommonValue(allTags.Select(t => t.Producer), multiplePlaceholder);
+        Copyright = GetCommonValue(allTags.Select(t => t.Copyright), multiplePlaceholder);
+        Publisher = GetCommonValue(allTags.Select(t => t.Publisher), multiplePlaceholder);
+        Comment = GetCommonValue(allTags.Select(t => t.Comment), multiplePlaceholder);
+        Asin = GetCommonValue(allTags.Select(t => t.ASIN), multiplePlaceholder);
+    }
+
+    private string GetCommonValue(IEnumerable<string?> values, string multiplePlaceholder)
+    {
+        var distinctValues = values.Where(v => !string.IsNullOrEmpty(v)).Distinct().ToList();
+        return distinctValues.Count == 1 ? distinctValues[0]! :
+            distinctValues.Count > 1 ? multiplePlaceholder : string.Empty;
+    }
+
+    private AudiobookTagDto CreateTagDtoFromFields()
+    {
+        const string multiplePlaceholder = "<multiple>";
+
+        // For fields that show <multiple>, we should keep them as null to avoid overwriting
+        // Only write fields that have actual values (not empty, not <multiple>)
+        return new AudiobookTagDto(
+     author: Author != multiplePlaceholder && !string.IsNullOrWhiteSpace(Author) ? Author : string.Empty,
+               title: Title != multiplePlaceholder && !string.IsNullOrWhiteSpace(Title) ? Title : string.Empty,
+         album: Album != multiplePlaceholder && !string.IsNullOrWhiteSpace(Album) ? Album : string.Empty,
+        trackNumber: null,
+           year: Year != multiplePlaceholder && int.TryParse(Year, out var y) ? y : null,
+           genre: Genre != multiplePlaceholder && !string.IsNullOrWhiteSpace(Genre) ? Genre : string.Empty,
+             narrator: Narrator != multiplePlaceholder && !string.IsNullOrWhiteSpace(Narrator) ? Narrator : string.Empty,
+               producer: Producer != multiplePlaceholder && !string.IsNullOrWhiteSpace(Producer) ? Producer : string.Empty,
+            copyright: Copyright != multiplePlaceholder && !string.IsNullOrWhiteSpace(Copyright) ? Copyright : string.Empty,
+    publisher: Publisher != multiplePlaceholder && !string.IsNullOrWhiteSpace(Publisher) ? Publisher : string.Empty,
+           comment: Comment != multiplePlaceholder && !string.IsNullOrWhiteSpace(Comment) ? Comment : string.Empty,
+      asin: Asin != multiplePlaceholder && !string.IsNullOrWhiteSpace(Asin) ? Asin : string.Empty,
+   coverImageUrl: CoverImagePath
+           );
+    }
+
+    private void ClearProject()
+    {
+        AudioFiles.Clear();
+        ClearTagFields();
+        CurrentFolderPath = string.Empty;
+        CurrentProjectPath = string.Empty;
+        ConsoleOutput = string.Empty;
+        _originalTags.Clear();
+        _backupTags.Clear();
+    }
+
+    private void ClearTagFields()
+    {
+        Author = string.Empty;
+        Title = string.Empty;
+        Album = string.Empty;
+        Year = string.Empty;
+        Genre = string.Empty;
+        Narrator = string.Empty;
+        Producer = string.Empty;
+        Copyright = string.Empty;
+        Publisher = string.Empty;
+        Comment = string.Empty;
+        Asin = string.Empty;
+        CoverImage = null;
+        CoverImagePath = string.Empty;
+    }
+
+    private void LogToConsole(string message)
+    {
+        var timestamp = DateTime.Now.ToString("HH:mm:ss");
+        ConsoleOutput += $"[{timestamp}] {message}\n";
+        _logger?.LogInformation(message);
+    }
+
+    // File picker methods
+    private async Task<string?> PickFolderAsync()
+    {
+        return FolderPickerFunc != null ? await FolderPickerFunc().ConfigureAwait(false) : null;
+    }
+
+    private async Task<string?> PickSaveFileAsync()
+    {
+        return SaveFilePickerFunc != null ? await SaveFilePickerFunc().ConfigureAwait(false) : null;
+    }
+
+    private async Task<string?> PickImageFileAsync()
+    {
+        return ImageFilePickerFunc != null ? await ImageFilePickerFunc().ConfigureAwait(false) : null;
+    }
+
+    #endregion
 }
