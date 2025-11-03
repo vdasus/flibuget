@@ -7,6 +7,7 @@ using flibuget.ViewModels;
 using flibuget.Core.InfraServices.AudioTags;
 using flibuget.Core.DomainServices;
 using flibuget.Core.InfraServices.AI;
+using flibuget.Core.InfraServices; // Added for IWebService
 
 namespace flibuget.Tests.ViewModels;
 
@@ -17,6 +18,7 @@ public class MainViewModelTests
     private readonly IServiceProvider _mockServiceProvider;
     private readonly IAudioTagService _mockTagService;
     private readonly AudiobookService _audiobookService;
+    private readonly IWebService _mockHttpService;
 
     public MainViewModelTests()
     {
@@ -29,13 +31,14 @@ public class MainViewModelTests
         var mockAIProvider = Substitute.For<IAIProvider>();
         var mockAudiobookServiceLogger = Substitute.For<ILogger<AudiobookService>>();
         _audiobookService = new AudiobookService(mockAIProvider, mockAudiobookServiceLogger);
+        _mockHttpService = Substitute.For<IWebService>();
     }
 
     [Fact]
     public void Constructor_ShouldInitialize_Successfully()
     {
         // Arrange & Act
-        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService);
+        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService, _mockHttpService);
 
         // Assert
         sut.Should().NotBeNull();
@@ -47,7 +50,7 @@ public class MainViewModelTests
     public void Constructor_ShouldLogInformation_WhenInitialized()
     {
         // Arrange & Act
-        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService);
+        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService, _mockHttpService);
 
         // Assert
         _mockLogger.Received(1).Log(
@@ -62,7 +65,7 @@ public class MainViewModelTests
     public void Constructor_ShouldInitializeProperties_WithDefaultValues()
     {
         // Arrange
-        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService);
+        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService, _mockHttpService);
 
         // Assert
         sut.Author.Should().BeEmpty();
@@ -77,7 +80,7 @@ public class MainViewModelTests
     public void SelectAllCommand_ShouldSelectAllFiles()
     {
         // Arrange
-        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService);
+        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService, _mockHttpService);
         sut.AudioFiles.Add(new flibuget.Models.AudiobookFile("test1.mp3"));
         sut.AudioFiles.Add(new flibuget.Models.AudiobookFile("test2.mp3"));
 
@@ -92,7 +95,7 @@ public class MainViewModelTests
     public void ClearSelectionCommand_ShouldClearAllSelections()
     {
         // Arrange
-        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService);
+        var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService, _mockHttpService);
         sut.AudioFiles.Add(new flibuget.Models.AudiobookFile("test1.mp3") { IsSelected = true });
         sut.AudioFiles.Add(new flibuget.Models.AudiobookFile("test2.mp3") { IsSelected = true });
 

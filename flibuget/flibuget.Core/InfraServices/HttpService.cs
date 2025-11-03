@@ -40,6 +40,28 @@ public class HttpService(IHttpClientFactory clientFactory, ILogger<HttpService> 
         return await response.Content.ReadAsStringAsync(linkedCts.Token).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Makes a GET request to the specified URI and returns the response content as a byte array.
+    /// </summary>
+    /// <param name="uri"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<byte[]> MakeGetByteArrayAsync(Uri uri, CancellationToken cancellationToken = default)
+    {
+        _logger.LogTrace("Starting GET request to {Uri}", uri);
+
+        var client = _clientFactory.CreateClient();
+
+        // Use CancellationTokenSource for timeout instead of modifying client.Timeout
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(DEFAULT_TIMEOUT_SEC));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+        var response = await client.GetByteArrayAsync(uri, linkedCts.Token).ConfigureAwait(false);
+
+        _logger.LogTrace("GET request for byte array completed successfully for {Uri}", uri);
+        return response;
+    }
+
     #region JSON requests
 
     public Task<string> MakeJsonPostRequestAsync(Uri uri, string data, int timeout = DEFAULT_TIMEOUT_SEC, CancellationToken cancellationToken = default)

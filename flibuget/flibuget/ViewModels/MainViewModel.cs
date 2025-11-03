@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using flibuget.Core.Domain.DTO;
 using flibuget.Core.DomainServices;
-using flibuget.Core.Examples;
+using flibuget.Core.InfraServices;
 using flibuget.Core.InfraServices.AudioTags;
 using flibuget.Models;
 using Microsoft.Extensions.Logging;
@@ -13,8 +13,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace flibuget.ViewModels;
@@ -26,10 +26,12 @@ public partial class MainViewModel : ViewModelBase
     private readonly IServiceProvider? _serviceProvider;
     private readonly IAudioTagService? _tagService;
     private readonly AudiobookService? _audiobookService;
-    private static readonly HttpClient _httpClient = new();
+    private readonly IWebService? _httpService;
 
     // Supported audio file extensions
     private static readonly string[] AudioExtensions = [".mp3", ".m4a", ".m4b", ".flac", ".wav", ".ogg", ".wma", ".aac"];
+
+    #region Properties
 
     // File list
     [ObservableProperty]
@@ -89,6 +91,8 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string currentProjectPath = string.Empty;
 
+    #endregion
+
     // Track original tags for undo functionality
     private Dictionary<string, AudiobookTagDto> _originalTags = new();
     private Dictionary<string, AudiobookTagDto> _backupTags = new();
@@ -99,18 +103,20 @@ public partial class MainViewModel : ViewModelBase
     public Func<Task<string?>>? ImageFilePickerFunc { get; set; }
 
     // Parameterless constructor for designer support
-    public MainViewModel() : this(null!, null!, null!, null!) { }
+    public MainViewModel() : this(null!, null!, null!, null!, null) { }
 
     public MainViewModel(
         ILogger<MainViewModel> logger,
         IServiceProvider serviceProvider,
-IAudioTagService tagService,
-        AudiobookService audiobookService)
+        IAudioTagService tagService,
+        AudiobookService audiobookService,
+        IWebService? httpService)
     {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-        _tagService = tagService;
-        _audiobookService = audiobookService;
+        _logger = logger ?? throw new ArgumentException(nameof(logger));
+        _serviceProvider = serviceProvider ?? throw new ArgumentException(nameof(serviceProvider));
+        _tagService = tagService ?? throw new ArgumentException(nameof(tagService));
+        _audiobookService = audiobookService ?? throw new ArgumentException(nameof(audiobookService));
+        _httpService = httpService ?? throw new ArgumentException(nameof(httpService));
 
         _logger?.LogInformation("MainViewModel initialized");
     }
@@ -288,9 +294,8 @@ IAudioTagService tagService,
             var searchTitle = !string.IsNullOrWhiteSpace(Title) ? Title :
                 !string.IsNullOrWhiteSpace(Album) ? Album : "Unknown";
 
-            var dto = await AIServiceUsageExamplesForAudiobooks
-            .Example3_AudioBookStructuredJsonResponseAsync(_serviceProvider, searchTitle, searchAuthor)
-   .ConfigureAwait(true);
+            var dto = await GetAudiobookInfoFromAIAsync(searchTitle, searchAuthor, Narrator)
+                .ConfigureAwait(true);
 
             // Map AI response to tag fields
             Author = dto.Author ?? Author;
@@ -305,7 +310,7 @@ IAudioTagService tagService,
             {
                 try
                 {
-                    var imageBytes = await _httpClient.GetByteArrayAsync(dto.CoverLink).ConfigureAwait(false);
+                    var imageBytes = await _httpService!.MakeGetByteArrayAsync(new Uri(dto.CoverLink)).ConfigureAwait(false);
                     using var ms = new MemoryStream(imageBytes);
                     CoverImage = new Bitmap(ms);
                     CoverImagePath = dto.CoverLink;
@@ -634,5 +639,62 @@ IAudioTagService tagService,
         return ImageFilePickerFunc != null ? await ImageFilePickerFunc().ConfigureAwait(false) : null;
     }
 
+    #endregion
+
+    #region To refactor later
+    private async Task<AudiobookDescriptionDto> GetAudiobookInfoFromAIAsync(string book, string author, string narrator)
+    {
+        AudiobookService service;
+        var prompt = @$"Please provide a detailed structured description of the audiobook in JSON format with the following fields:
+
+- title: book title,
+- author: author name,
+- cover_link: direct link to the book cover in high resolution,
+- description: brief but comprehensive description of the audiobook plot, including genres and main themes,
+- themes: list of main themes or genres of the book (e.g., ""fantasy"", ""adventure"", ""humor""),
+- duration: audiobook duration (hours and minutes),
+- narrator: name of the narrator (if known),
+- age_restriction: age restrictions (if any),
+- link: link to an official or major resource where you can listen to or purchase the audiobook.
+
+The description should be informative and engaging, reflecting the atmosphere and purpose of the work. Fields should be filled as completely as possible.
+
+Please compose such JSON for the book ""{book}"" by {author} with narrator {narrator}.
+
+Return ONLY the JSON object, no additional text.";
+
+        if (prompt == null) return new AudiobookDescriptionDto();
+
+        var answer = await (_audiobookService?.AskAsync(
+                prompt,
+                systemMessage: "You are a helpful assistant that returns only valid JSON responses."))
+            .ConfigureAwait(false);
+
+        // Strip markdown code blocks if present
+        var cleanJson = StripMarkdownCodeBlocks(answer);
+
+        // Deserialize to strongly-typed object
+        var result = JsonSerializer.Deserialize<AudiobookDescriptionDto>(cleanJson);
+        return result;
+
+    }
+
+    /// <summary>
+    /// Strips markdown code blocks from AI responses to extract pure JSON.
+    /// Handles both ```json and ``` code block formats.
+    /// </summary>
+    /// <param name="response">The AI response that may contain markdown-wrapped JSON</param>
+    /// <returns>Clean JSON string</returns>
+    private static string StripMarkdownCodeBlocks(string response)
+    {
+        if (string.IsNullOrWhiteSpace(response))
+            return response;
+
+        // Remove markdown code blocks: ```json ... ``` or ``` ... ```
+        var pattern = @"^```(?:json)?\s*\n?(.*?)\n?```$";
+        var match = Regex.Match(response.Trim(), pattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+        return match.Success ? match.Groups[1].Value.Trim() : response.Trim();
+    }
     #endregion
 }
