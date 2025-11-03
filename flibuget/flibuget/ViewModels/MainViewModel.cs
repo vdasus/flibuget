@@ -1,4 +1,4 @@
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using flibuget.Core.Domain.DTO;
@@ -53,6 +53,7 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string? year;
 
+    // Genre can contain multiple values separated by semicolon (e.g., "Fantasy; Adventure; Humor")
     [ObservableProperty]
     private string genre = string.Empty;
 
@@ -292,10 +293,10 @@ public partial class MainViewModel : ViewModelBase
             // Use author and title/album as search terms
             var searchAuthor = !string.IsNullOrWhiteSpace(Author) ? Author : "Unknown";
             var searchTitle = !string.IsNullOrWhiteSpace(Title) ? Title :
-                !string.IsNullOrWhiteSpace(Album) ? Album : "Unknown";
+                      !string.IsNullOrWhiteSpace(Album) ? Album : "Unknown";
 
             var dto = await GetAudiobookInfoFromAIAsync(searchTitle, searchAuthor, Narrator)
-                .ConfigureAwait(true);
+                    .ConfigureAwait(true);
 
             // Map AI response to tag fields
             Author = dto.Author ?? Author;
@@ -303,7 +304,10 @@ public partial class MainViewModel : ViewModelBase
             Album = dto.Title ?? Album; // AI returns book title, use it for album
             Narrator = dto.Narrator ?? Narrator;
             Comment = dto.Description ?? Comment;
-            Genre = "Audiobook";
+            Year = dto.Year?.ToString() ?? Year;
+            // Handle multiple genres/themes - join with semicolon
+
+            Genre = dto.Themes is { Count: > 0 } ? string.Join("; ", dto.Themes) : "Audiobook";
 
             // Load cover image
             if (!string.IsNullOrWhiteSpace(dto.CoverLink))
@@ -327,6 +331,10 @@ public partial class MainViewModel : ViewModelBase
             LogToConsole($"Title: {dto.Title}");
             LogToConsole($"Author: {dto.Author}");
             LogToConsole($"Narrator: {dto.Narrator}");
+            if (dto.Themes is { Count: > 0 })
+            {
+                LogToConsole($"Themes: {string.Join(", ", dto.Themes)}");
+            }
         }
         catch (Exception ex)
         {
@@ -389,6 +397,38 @@ public partial class MainViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
+    private List<string> GetTagChanges(AudiobookTagDto original, AudiobookTagDto updated)
+    {
+        var changes = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(updated.Author) && updated.Author != original.Author)
+            changes.Add($"Author: '{original.Author}' → '{updated.Author}'");
+        if (!string.IsNullOrWhiteSpace(updated.Title) && updated.Title != original.Title)
+            changes.Add($"Title: '{original.Title}' → '{updated.Title}'");
+        if (!string.IsNullOrWhiteSpace(updated.Album) && updated.Album != original.Album)
+            changes.Add($"Album: '{original.Album}' → '{updated.Album}'");
+        if (!string.IsNullOrWhiteSpace(updated.Narrator) && updated.Narrator != original.Narrator)
+            changes.Add($"Narrator: '{original.Narrator}' → '{updated.Narrator}'");
+        if (!string.IsNullOrWhiteSpace(updated.Genre) && updated.Genre != original.Genre)
+            changes.Add($"Genre: '{original.Genre}' → '{updated.Genre}'");
+        if (!string.IsNullOrWhiteSpace(updated.Producer) && updated.Producer != original.Producer)
+            changes.Add($"Producer: '{original.Producer}' → '{updated.Producer}'");
+        if (!string.IsNullOrWhiteSpace(updated.Copyright) && updated.Copyright != original.Copyright)
+            changes.Add($"Copyright: '{original.Copyright}' → '{updated.Copyright}'");
+        if (!string.IsNullOrWhiteSpace(updated.Publisher) && updated.Publisher != original.Publisher)
+            changes.Add($"Publisher: '{original.Publisher}' → '{updated.Publisher}'");
+        if (!string.IsNullOrWhiteSpace(updated.Comment) && updated.Comment != original.Comment)
+            changes.Add($"Comment: '{original.Comment}' → '{updated.Comment}'");
+        if (!string.IsNullOrWhiteSpace(updated.ASIN) && updated.ASIN != original.ASIN)
+            changes.Add($"ASIN: '{original.ASIN}' → '{updated.ASIN}'");
+        if (!string.IsNullOrWhiteSpace(updated.CoverImageUrl) && updated.CoverImageUrl != original.CoverImageUrl)
+            changes.Add($"CoverImage: '{original.CoverImageUrl}' → '{updated.CoverImageUrl}'");
+        if (updated.Year.HasValue && updated.Year != original.Year)
+            changes.Add($"Year: '{original.Year}' → '{updated.Year}'");
+
+        return changes;
+    }
+
     [RelayCommand]
     private Task SetTagsIntoSelectedFilesAsync()
     {
@@ -423,16 +463,22 @@ public partial class MainViewModel : ViewModelBase
             // Create tag DTO from current fields (skip <multiple> placeholders and empty values)
             var tags = CreateTagDtoFromFields();
 
-            // Log what we're about to write
-            LogToConsole($"Tags to write - Author: '{tags.Author}', Title: '{tags.Title}', Album: '{tags.Album}', Narrator: '{tags.Narrator}'");
+            foreach (var file in selectedFiles)
+            {
+                var original = _backupTags.TryGetValue(file.FilePath, out var orig) ? orig : null;
+                if (original == null) continue;
+
+                var changes = GetTagChanges(original, tags);
+                LogToConsole(changes.Count > 0
+                    ? $"File: {file.FileName} - Tags to be replaced:\n {string.Join("\n ", changes)}"
+                    : $"File: {file.FileName} - No tags will be replaced.");
+            }
 
             int successCount = 0;
             foreach (var file in selectedFiles)
             {
                 try
                 {
-                    // Use overwriteExisting: true to ensure values are written
-                    // CreateTagDtoFromFields already filters out <multiple> and empty values
                     _tagService.Write(file.FilePath, tags, overwriteExisting: true);
                     successCount++;
                 }
@@ -572,20 +618,24 @@ public partial class MainViewModel : ViewModelBase
         // For fields that show <multiple>, we should keep them as null to avoid overwriting
         // Only write fields that have actual values (not empty, not <multiple>)
         return new AudiobookTagDto(
-     author: Author != multiplePlaceholder && !string.IsNullOrWhiteSpace(Author) ? Author : string.Empty,
-               title: Title != multiplePlaceholder && !string.IsNullOrWhiteSpace(Title) ? Title : string.Empty,
-         album: Album != multiplePlaceholder && !string.IsNullOrWhiteSpace(Album) ? Album : string.Empty,
-        trackNumber: null,
-           year: Year != multiplePlaceholder && int.TryParse(Year, out var y) ? y : null,
-           genre: Genre != multiplePlaceholder && !string.IsNullOrWhiteSpace(Genre) ? Genre : string.Empty,
-             narrator: Narrator != multiplePlaceholder && !string.IsNullOrWhiteSpace(Narrator) ? Narrator : string.Empty,
-               producer: Producer != multiplePlaceholder && !string.IsNullOrWhiteSpace(Producer) ? Producer : string.Empty,
-            copyright: Copyright != multiplePlaceholder && !string.IsNullOrWhiteSpace(Copyright) ? Copyright : string.Empty,
-    publisher: Publisher != multiplePlaceholder && !string.IsNullOrWhiteSpace(Publisher) ? Publisher : string.Empty,
-           comment: Comment != multiplePlaceholder && !string.IsNullOrWhiteSpace(Comment) ? Comment : string.Empty,
-      asin: Asin != multiplePlaceholder && !string.IsNullOrWhiteSpace(Asin) ? Asin : string.Empty,
-   coverImageUrl: CoverImagePath
-           );
+            author: Author != multiplePlaceholder && !string.IsNullOrWhiteSpace(Author) ? Author : string.Empty,
+            title: Title != multiplePlaceholder && !string.IsNullOrWhiteSpace(Title) ? Title : string.Empty,
+            album: Album != multiplePlaceholder && !string.IsNullOrWhiteSpace(Album) ? Album : string.Empty,
+            trackNumber: null,
+            year: Year != multiplePlaceholder && uint.TryParse(Year, out var y) ? y : null,
+            genre: Genre != multiplePlaceholder && !string.IsNullOrWhiteSpace(Genre) ? Genre : string.Empty,
+            narrator: Narrator != multiplePlaceholder && !string.IsNullOrWhiteSpace(Narrator) ? Narrator : string.Empty,
+            producer: Producer != multiplePlaceholder && !string.IsNullOrWhiteSpace(Producer) ? Producer : string.Empty,
+            copyright: Copyright != multiplePlaceholder && !string.IsNullOrWhiteSpace(Copyright)
+                ? Copyright
+                : string.Empty,
+            publisher: Publisher != multiplePlaceholder && !string.IsNullOrWhiteSpace(Publisher)
+                ? Publisher
+                : string.Empty,
+            comment: Comment != multiplePlaceholder && !string.IsNullOrWhiteSpace(Comment) ? Comment : string.Empty,
+            asin: Asin != multiplePlaceholder && !string.IsNullOrWhiteSpace(Asin) ? Asin : string.Empty,
+            coverImageUrl: CoverImagePath
+        );
     }
 
     private void ClearProject()
@@ -644,7 +694,6 @@ public partial class MainViewModel : ViewModelBase
     #region To refactor later
     private async Task<AudiobookDescriptionDto> GetAudiobookInfoFromAIAsync(string book, string author, string narrator)
     {
-        AudiobookService service;
         var prompt = @$"Please provide a detailed structured description of the audiobook in JSON format with the following fields:
 
 - title: book title,
@@ -654,6 +703,7 @@ public partial class MainViewModel : ViewModelBase
 - themes: list of main themes or genres of the book (e.g., ""fantasy"", ""adventure"", ""humor""),
 - duration: audiobook duration (hours and minutes),
 - narrator: name of the narrator (if known),
+- year: year of publication,
 - age_restriction: age restrictions (if any),
 - link: link to an official or major resource where you can listen to or purchase the audiobook.
 
@@ -662,8 +712,6 @@ The description should be informative and engaging, reflecting the atmosphere an
 Please compose such JSON for the book ""{book}"" by {author} with narrator {narrator}.
 
 Return ONLY the JSON object, no additional text.";
-
-        if (prompt == null) return new AudiobookDescriptionDto();
 
         var answer = await (_audiobookService?.AskAsync(
                 prompt,

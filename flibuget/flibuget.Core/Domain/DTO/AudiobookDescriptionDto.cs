@@ -25,6 +25,9 @@ public class AudiobookDescriptionDto
     [JsonPropertyName("duration")]
     public string Duration { get; set; } = string.Empty;
 
+    [JsonPropertyName("year")]
+    public int? Year { get; set; } = null!;
+
     [JsonPropertyName("narrator")]
     public string Narrator { get; set; } = string.Empty;
 

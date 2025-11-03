@@ -12,7 +12,7 @@ public class AudiobookTagDtoTests
         string title,
         string album,
         int? trackNumber,
-        int? year,
+        uint? year,
         string genre,
         string narrator,
         string producer,
@@ -30,7 +30,7 @@ public class AudiobookTagDtoTests
         dto.Title.Should().Be(title);
         dto.Album.Should().Be(album);
         dto.TrackNumber.Should().Be(trackNumber);
-        dto.Year.Should().Be(year);
+        dto.Year.Should().Be(year.Value);
         dto.Genre.Should().Be(genre);
         dto.Narrator.Should().Be(narrator);
         dto.Producer.Should().Be(producer);

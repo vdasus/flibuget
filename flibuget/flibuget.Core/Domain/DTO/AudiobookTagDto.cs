@@ -4,7 +4,7 @@ public class AudiobookTagDto(
     string title,
     string album,
     int? trackNumber,
-    int? year,
+    uint? year,
     string genre,
     string narrator,
     string producer,
@@ -37,7 +37,7 @@ public class AudiobookTagDto(
     /// <summary>
     /// Year of audiobook release.
     /// </summary>
-    public int? Year { get; set; } = year;
+    public uint? Year { get; set; } = year;
 
     /// <summary>
     /// Genre of audio content, e.g. "Audiobook".
