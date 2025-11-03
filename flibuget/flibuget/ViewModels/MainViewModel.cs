@@ -285,8 +285,8 @@ IAudioTagService tagService,
 
             // Use author and title/album as search terms
             var searchAuthor = !string.IsNullOrWhiteSpace(Author) ? Author : "Unknown";
-            var searchTitle = !string.IsNullOrWhiteSpace(Album) ? Album :
-            !string.IsNullOrWhiteSpace(Title) ? Title : "Unknown";
+            var searchTitle = !string.IsNullOrWhiteSpace(Title) ? Title :
+                !string.IsNullOrWhiteSpace(Album) ? Album : "Unknown";
 
             var dto = await AIServiceUsageExamplesForAudiobooks
             .Example3_AudioBookStructuredJsonResponseAsync(_serviceProvider, searchTitle, searchAuthor)
