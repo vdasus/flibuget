@@ -40,10 +40,17 @@ public class AudioTagService(IFileSystem? fileSystem = null) : IAudioTagService
         // TPE1 (Artist) -> Author, Narrator (combined)
         // TCON (Genre) -> Genre
         // TYER (Year) -> Copyright Year
-        // COMM (Comment) -> Publisher's Summary
-        // TIT3 (Subtitle) -> Description/Subtitle
+        // COMM (Comment) -> Publisher's Summary (MP3)
+        // desc (Description) -> Publisher's Summary (M4B)
+        // TIT3 (Subtitle) -> Subtitle
         // TCOP (Copyright) -> Copyright
         // TPUB (Publisher) -> Publisher
+        
+        // For Description, prefer tag.Description (M4B desc) over tag.Subtitle (TIT3)
+        var description = !string.IsNullOrEmpty(tag.Description) 
+            ? tag.Description 
+            : tag.Subtitle ?? string.Empty;
+        
         return new AudiobookTagDto(
             author: tag.FirstAlbumArtist ?? string.Empty,  // TPE2 (ALBUMARTIST) = Author
             title: tag.Title ?? string.Empty,               // TIT2 (TITLE) = Chapter Title
@@ -55,8 +62,8 @@ public class AudioTagService(IFileSystem? fileSystem = null) : IAudioTagService
             producer: string.Empty,                          // Not in Audible spec
             copyright: tag.Copyright ?? string.Empty,        // TCOP (COPYRIGHT) = Copyright
             publisher: tag.Publisher ?? string.Empty,        // TPUB (PUBLISHER) = Publisher
-            comment: tag.Comment ?? string.Empty,            // COMM (COMMENT) = Publisher's Summary
-            description: tag.Subtitle ?? string.Empty,       // TIT3 (SUBTITLE) = Subtitle/Description
+            comment: tag.Comment ?? string.Empty,            // COMM (COMMENT) = Publisher's Summary (MP3)
+            description: description,                        // desc (DESCRIPTION) for M4B or TIT3 (SUBTITLE)
             asin: string.Empty,                              // ASIN = custom field
             coverImageUrl: coverImageTempPath                // CoverUrl = Album Cover Art
         );
@@ -87,11 +94,20 @@ public class AudioTagService(IFileSystem? fileSystem = null) : IAudioTagService
 
         // TCON (GENRE) = Genre1/Genre2
         // Handle multiple genres - split by semicolon and trim whitespace
-        if (ShouldSetArray(tags.Genre, tag.Genres))
+        // Always process genre field to ensure proper array format
+        if (!string.IsNullOrWhiteSpace(tags.Genre))
         {
-            var genres = tags.Genre
-                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            tag.Genres = genres;
+            if (overwriteExisting || tag.Genres.Length == 0)
+            {
+                var genres = tags.Genre
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                tag.Genres = genres;
+            }
+        }
+        else if (overwriteExisting)
+        {
+            // Clear genres if overwriting and incoming is empty
+            tag.Genres = [];
         }
 
         // Scalar string fields
@@ -103,11 +119,15 @@ public class AudioTagService(IFileSystem? fileSystem = null) : IAudioTagService
         if (ShouldSet(tags.Album, tag.Album)) 
             tag.Album = tags.Album;
         
-        // COMM (COMMENT) = Publisher's Summary
+        // COMM (COMMENT) = Publisher's Summary (MP3)
         if (ShouldSet(tags.Comment, tag.Comment)) 
             tag.Comment = tags.Comment;
         
-        // TIT3 (SUBTITLE) = Subtitle/Description
+        // desc (DESCRIPTION) for M4B and TIT3 (SUBTITLE) for MP3
+        // Write to both fields to ensure compatibility
+        if (ShouldSet(tags.Description, tag.Description)) 
+            tag.Description = tags.Description;
+        
         if (ShouldSet(tags.Description, tag.Subtitle)) 
             tag.Subtitle = tags.Description;
         

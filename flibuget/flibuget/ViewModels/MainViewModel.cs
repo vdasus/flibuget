@@ -342,6 +342,8 @@ public partial class MainViewModel : ViewModelBase
 
             LogToConsole("Fetching audiobook information from AI...");
 
+            const string multiplePlaceholder = "<multiple>";
+
             // Use author and title/album as search terms
             var authorField = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.Author));
             var titleField = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.Title));
@@ -349,8 +351,14 @@ public partial class MainViewModel : ViewModelBase
             var narratorField = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.Narrator));
 
             var searchAuthor = !string.IsNullOrWhiteSpace(authorField?.Value) ? authorField.Value : "Unknown";
-            var searchTitle = !string.IsNullOrWhiteSpace(titleField?.Value) ? titleField.Value :
-                      !string.IsNullOrWhiteSpace(albumField?.Value) ? albumField.Value : "Unknown";
+            
+            // If Title is <multiple>, use Album field as search title
+            var searchTitle = !string.IsNullOrWhiteSpace(titleField?.Value) && titleField.Value != multiplePlaceholder 
+                ? titleField.Value
+                : !string.IsNullOrWhiteSpace(albumField?.Value) && albumField.Value != multiplePlaceholder 
+                    ? albumField.Value 
+                    : "Unknown";
+            
             var searchNarrator = narratorField?.Value ?? string.Empty;
 
             var dto = await _audiobookService.GetAudiobookInfoFromAIAsync(searchTitle, searchAuthor, searchNarrator)
