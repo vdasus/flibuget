@@ -40,6 +40,9 @@ public class AudiobookProject
     [JsonPropertyName("comment")]
     public string Comment { get; set; } = string.Empty;
 
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
+
     [JsonPropertyName("asin")]
     public string ASIN { get; set; } = string.Empty;
 

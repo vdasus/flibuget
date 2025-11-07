@@ -13,6 +13,7 @@ public class AudiobookTagDto(
     string copyright,
     string publisher,
     string comment,
+    string description,
     string asin,
     string coverImageUrl)
 {
@@ -83,10 +84,16 @@ public class AudiobookTagDto(
     public string ASIN { get; set; } = asin;
 
     /// <summary>
-    /// Additional notes or description (Comment tag).
+    /// Additional notes (Comment tag).
     /// </summary>
-    [TagDisplay(Order = 12, DisplayName = "Comment / Description", Watermark = "Additional notes or description", IsMultiLine = true)]
+    [TagDisplay(Order = 12, DisplayName = "Comment", Watermark = "Additional notes", IsMultiLine = true)]
     public string Comment { get; set; } = comment;
+
+    /// <summary>
+    /// Book description or synopsis (Subtitle/Description tag).
+    /// </summary>
+    [TagDisplay(Order = 13, DisplayName = "Description", Watermark = "Book description or synopsis", IsMultiLine = true)]
+    public string Description { get; set; } = description;
 
     /// <summary>
     /// URL or path to the cover image.

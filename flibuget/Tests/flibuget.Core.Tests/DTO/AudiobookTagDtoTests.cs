@@ -19,11 +19,12 @@ public class AudiobookTagDtoTests
         string copyright,
         string publisher,
         string comment,
+        string description,
         string asin,
         string coverImageUrl)
     {
         // Act
-        var dto = new AudiobookTagDto(author, title, album, trackNumber, year, genre, narrator, producer, copyright, publisher, comment, asin, coverImageUrl);
+        var dto = new AudiobookTagDto(author, title, album, trackNumber, year, genre, narrator, producer, copyright, publisher, comment, description, asin, coverImageUrl);
 
         // Assert
         dto.Author.Should().Be(author);
@@ -37,6 +38,7 @@ public class AudiobookTagDtoTests
         dto.Copyright.Should().Be(copyright);
         dto.Publisher.Should().Be(publisher);
         dto.Comment.Should().Be(comment);
+        dto.Description.Should().Be(description);
         dto.ASIN.Should().Be(asin);
         dto.CoverImageUrl.Should().Be(coverImageUrl);
     }

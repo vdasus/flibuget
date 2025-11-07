@@ -265,6 +265,7 @@ public partial class MainViewModel : ViewModelBase
                 Copyright = GetFieldValue(nameof(AudiobookTagDto.Copyright)),
                 Publisher = GetFieldValue(nameof(AudiobookTagDto.Publisher)),
                 Comment = GetFieldValue(nameof(AudiobookTagDto.Comment)),
+                Description = GetFieldValue(nameof(AudiobookTagDto.Description)),
                 ASIN = GetFieldValue(nameof(AudiobookTagDto.ASIN)),
                 CoverImagePath = CoverImagePath
             };
@@ -360,7 +361,7 @@ public partial class MainViewModel : ViewModelBase
             UpdateFieldValue(nameof(AudiobookTagDto.Title), dto.Title);
             UpdateFieldValue(nameof(AudiobookTagDto.Album), dto.Title); // AI returns book title, use it for album
             UpdateFieldValue(nameof(AudiobookTagDto.Narrator), dto.Narrator);
-            UpdateFieldValue(nameof(AudiobookTagDto.Comment), dto.Description);
+            UpdateFieldValue(nameof(AudiobookTagDto.Description), dto.Description);
             UpdateFieldValue(nameof(AudiobookTagDto.Year), dto.Year?.ToString());
             
             // Handle multiple genres/themes - join with semicolon
@@ -491,6 +492,8 @@ public partial class MainViewModel : ViewModelBase
             changes.Add($"Publisher: '{original.Publisher}' → '{updated.Publisher}'");
         if (!string.IsNullOrWhiteSpace(updated.Comment) && updated.Comment != original.Comment)
             changes.Add($"Comment: '{original.Comment}' → '{updated.Comment}'");
+        if (!string.IsNullOrWhiteSpace(updated.Description) && updated.Description != original.Description)
+            changes.Add($"Description: '{original.Description}' → '{updated.Description}'");
         if (!string.IsNullOrWhiteSpace(updated.ASIN) && updated.ASIN != original.ASIN)
             changes.Add($"ASIN: '{original.ASIN}' → '{updated.ASIN}'");
         if (!string.IsNullOrWhiteSpace(updated.CoverImageUrl) && updated.CoverImageUrl != original.CoverImageUrl)
@@ -734,6 +737,7 @@ public partial class MainViewModel : ViewModelBase
             copyright: GetFieldValue(nameof(AudiobookTagDto.Copyright)),
             publisher: GetFieldValue(nameof(AudiobookTagDto.Publisher)),
             comment: GetFieldValue(nameof(AudiobookTagDto.Comment)),
+            description: GetFieldValue(nameof(AudiobookTagDto.Description)),
             asin: GetFieldValue(nameof(AudiobookTagDto.ASIN)),
             coverImageUrl: CoverImagePath
         );

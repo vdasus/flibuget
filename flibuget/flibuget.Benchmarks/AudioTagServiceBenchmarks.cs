@@ -51,6 +51,7 @@ public class AudioTagServiceBenchmarks
         copyright: _copyright,
         publisher: _publisher,
         comment: _comment,
+        description: "Benchmark description text",
         asin: _asin,
         coverImageUrl: _cover);
 
@@ -66,6 +67,7 @@ public class AudioTagServiceBenchmarks
         copyright: string.Empty,
         publisher: string.Empty,
         comment: string.Empty,
+        description: string.Empty,
         asin: string.Empty,
         coverImageUrl: string.Empty);
 
