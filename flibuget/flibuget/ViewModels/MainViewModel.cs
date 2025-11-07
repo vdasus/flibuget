@@ -303,7 +303,7 @@ public partial class MainViewModel : ViewModelBase
             var searchTitle = !string.IsNullOrWhiteSpace(Title) ? Title :
                       !string.IsNullOrWhiteSpace(Album) ? Album : "Unknown";
 
-            var dto = await GetAudiobookInfoFromAIAsync(searchTitle, searchAuthor, Narrator)
+            var dto = await _audiobookService.GetAudiobookInfoFromAIAsync(searchTitle, searchAuthor, Narrator)
                     .ConfigureAwait(true);
 
             // Map AI response to tag fields
@@ -593,6 +593,21 @@ public partial class MainViewModel : ViewModelBase
         Publisher = tags.Publisher ?? string.Empty;
         Comment = tags.Comment ?? string.Empty;
         Asin = tags.ASIN ?? string.Empty;
+        // Load cover image if present
+        if (!string.IsNullOrEmpty(tags.CoverImageUrl) && File.Exists(tags.CoverImageUrl))
+        {
+            try
+            {
+                CoverImage = new Bitmap(tags.CoverImageUrl);
+                CoverImagePath = tags.CoverImageUrl;
+            }
+            catch { CoverImage = null; CoverImagePath = string.Empty; }
+        }
+        else
+        {
+            CoverImage = null;
+            CoverImagePath = string.Empty;
+        }
     }
 
     private void MergeTagsFromMultipleFiles(List<AudiobookTagDto> allTags)
@@ -697,58 +712,5 @@ public partial class MainViewModel : ViewModelBase
         return ImageFilePickerFunc != null ? await ImageFilePickerFunc().ConfigureAwait(false) : null;
     }
 
-    #endregion
-
-    #region To refactor later
-    private async Task<AudiobookDescriptionDto> GetAudiobookInfoFromAIAsync(string book, string author, string narrator)
-    {
-        var prompt = @$"Please provide a detailed structured description of the audiobook in JSON format with the following fields:
-
-- title: book title,
-- author: author name,
-- cover_link: direct link to the book cover in high resolution,
-- description: brief but comprehensive description of the audiobook plot, including genres and main themes,
-- themes: list of main themes or genres of the book (e.g., ""fantasy"", ""adventure"", ""humor""),
-- duration: audiobook duration (hours and minutes),
-- narrator: name of the narrator (if known),
-- year: year of publication,
-- age_restriction: age restrictions (if any),
-- link: link to an official or major resource where you can listen to or purchase the audiobook.
-
-The description should be informative and engaging, reflecting the atmosphere and purpose of the work. Fields should be filled as completely as possible.
-
-Please compose such JSON for the book ""{book}"" by {author} with narrator {narrator}.
-
-Return ONLY the JSON object, no additional text.";
-
-        var answer = await (_audiobookService?.AskAsync(
-                prompt,
-                systemMessage: "You are a helpful assistant that returns only valid JSON responses.")!)
-            .ConfigureAwait(false);
-
-        // Strip markdown code blocks if present
-        var cleanJson = StripMarkdownCodeBlocks(answer);
-
-        // Deserialize to strongly-typed object
-        return JsonSerializer.Deserialize<AudiobookDescriptionDto>(cleanJson) ?? throw new InvalidOperationException("Can't get info from AI.");
-    }
-
-    /// <summary>
-    /// Strips markdown code blocks from AI responses to extract pure JSON.
-    /// Handles both ```json and ``` code block formats.
-    /// </summary>
-    /// <param name="response">The AI response that may contain markdown-wrapped JSON</param>
-    /// <returns>Clean JSON string</returns>
-    private static string StripMarkdownCodeBlocks(string response)
-    {
-        if (string.IsNullOrWhiteSpace(response))
-            return response;
-
-        // Remove markdown code blocks: ```json ... ``` or ``` ... ```
-        var pattern = @"^```(?:json)?\s*\n?(.*?)\n?```$";
-        var match = Regex.Match(response.Trim(), pattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-        return match.Success ? match.Groups[1].Value.Trim() : response.Trim();
-    }
     #endregion
 }

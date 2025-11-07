@@ -251,4 +251,322 @@ null,
     }
 
     #endregion
+
+    #region GetAudiobookInfoFromAIAsync Tests
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WithValidResponse_ShouldReturnParsedDto()
+    {
+        // Arrange
+        var book = "The Hobbit";
+        var author = "J.R.R. Tolkien";
+        var narrator = "Andy Serkis";
+        
+        var expectedDto = new AudiobookDescriptionDto
+        {
+            Title = "The Hobbit",
+            Author = "J.R.R. Tolkien",
+            CoverLink = "https://example.com/hobbit.jpg",
+            Description = "A fantasy adventure about Bilbo Baggins",
+            Themes = new List<string> { "Fantasy", "Adventure", "Quest" },
+            Duration = "11h 8m",
+            Narrator = "Andy Serkis",
+            Year = 1937,
+            AgeRestriction = "8+",
+            Link = "https://example.com/hobbit-audiobook"
+        };
+
+        var jsonResponse = JsonSerializer.Serialize(expectedDto);
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(), 
+                Arg.Any<string>(), 
+                null, 
+                Arg.Any<CancellationToken>())
+            .Returns(jsonResponse);
+
+        // Act
+        var result = await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Title.Should().Be(expectedDto.Title);
+        result.Author.Should().Be(expectedDto.Author);
+        result.CoverLink.Should().Be(expectedDto.CoverLink);
+        result.Description.Should().Be(expectedDto.Description);
+        result.Themes.Should().BeEquivalentTo(expectedDto.Themes);
+        result.Duration.Should().Be(expectedDto.Duration);
+        result.Narrator.Should().Be(expectedDto.Narrator);
+        result.Year.Should().Be(expectedDto.Year);
+        result.AgeRestriction.Should().Be(expectedDto.AgeRestriction);
+        result.Link.Should().Be(expectedDto.Link);
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WithMarkdownCodeBlock_ShouldStripAndParse()
+    {
+        // Arrange
+        var book = "1984";
+        var author = "George Orwell";
+        var narrator = "Simon Prebble";
+        
+        var dto = new AudiobookDescriptionDto
+        {
+            Title = "1984",
+            Author = "George Orwell",
+            Narrator = "Simon Prebble",
+            Year = 1949
+        };
+
+        var jsonResponse = $"```json\n{JsonSerializer.Serialize(dto)}\n```";
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(), 
+                Arg.Any<string>(), 
+                null, 
+                Arg.Any<CancellationToken>())
+            .Returns(jsonResponse);
+
+        // Act
+        var result = await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Title.Should().Be("1984");
+        result.Author.Should().Be("George Orwell");
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WithMarkdownCodeBlockNoLanguage_ShouldStripAndParse()
+    {
+        // Arrange
+        var book = "Dune";
+        var author = "Frank Herbert";
+        var narrator = "Scott Brick";
+        
+        var dto = new AudiobookDescriptionDto
+        {
+            Title = "Dune",
+            Author = "Frank Herbert",
+            Narrator = "Scott Brick"
+        };
+
+        var jsonResponse = $"```\n{JsonSerializer.Serialize(dto)}\n```";
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(), 
+                Arg.Any<string>(), 
+                null, 
+                Arg.Any<CancellationToken>())
+            .Returns(jsonResponse);
+
+        // Act
+        var result = await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Title.Should().Be("Dune");
+        result.Author.Should().Be("Frank Herbert");
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WithInvalidJson_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var book = "Test Book";
+        var author = "Test Author";
+        var narrator = "Test Narrator";
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(), 
+                Arg.Any<string>(), 
+                null, 
+                Arg.Any<CancellationToken>())
+            .Returns("This is not JSON at all");
+
+        // Act
+        var act = async () => await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Can't get info from AI.");
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WithNullResponse_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var book = "Test Book";
+        var author = "Test Author";
+        var narrator = "Test Narrator";
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(), 
+                Arg.Any<string>(), 
+                null, 
+                Arg.Any<CancellationToken>())
+            .Returns("null");
+
+        // Act
+        var act = async () => await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Can't get info from AI.");
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WithEmptyJson_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var book = "Test Book";
+        var author = "Test Author";
+        var narrator = "Test Narrator";
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(), 
+                Arg.Any<string>(), 
+                null, 
+                Arg.Any<CancellationToken>())
+            .Returns("{}");
+
+        // Act - Empty JSON object should still deserialize to a valid DTO with empty strings
+        var result = await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_ShouldPassCorrectPromptToAI()
+    {
+        // Arrange
+        var book = "The Great Gatsby";
+        var author = "F. Scott Fitzgerald";
+        var narrator = "Jake Gyllenhaal";
+        
+        var dto = new AudiobookDescriptionDto { Title = book, Author = author };
+        var jsonResponse = JsonSerializer.Serialize(dto);
+        
+        string? capturedPrompt = null;
+        string? capturedSystemMessage = null;
+
+        _aiProvider
+            .AskAsync(
+                Arg.Do<string>(x => capturedPrompt = x),
+                Arg.Do<string?>(x => capturedSystemMessage = x),
+                null,
+                Arg.Any<CancellationToken>())
+            .Returns(jsonResponse);
+
+        // Act
+        await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        capturedPrompt.Should().NotBeNullOrEmpty();
+        capturedPrompt.Should().Contain(book);
+        capturedPrompt.Should().Contain(author);
+        capturedPrompt.Should().Contain(narrator);
+        capturedPrompt.Should().Contain("JSON format");
+        capturedSystemMessage.Should().Be("You are a helpful assistant that returns only valid JSON responses.");
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WithCancellationToken_ShouldPassToProvider()
+    {
+        // Arrange
+        var book = "Test Book";
+        var author = "Test Author";
+        var narrator = "Test Narrator";
+        using var cts = new CancellationTokenSource();
+        
+        var dto = new AudiobookDescriptionDto { Title = book };
+        var jsonResponse = JsonSerializer.Serialize(dto);
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                null,
+                cts.Token)
+            .Returns(jsonResponse);
+
+        // Act
+        await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator, cts.Token);
+
+        // Assert
+        await _aiProvider.Received(1).AskAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            null,
+            cts.Token);
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WhenAIProviderThrows_ShouldPropagateException()
+    {
+        // Arrange
+        var book = "Test Book";
+        var author = "Test Author";
+        var narrator = "Test Narrator";
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                null,
+                Arg.Any<CancellationToken>())
+            .ThrowsAsync(new HttpRequestException("Network timeout"));
+
+        // Act
+        var act = async () => await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        await act.Should().ThrowAsync<HttpRequestException>()
+            .WithMessage("Network timeout");
+    }
+
+    [Fact]
+    public async Task GetAudiobookInfoFromAIAsync_WithPartialData_ShouldReturnDtoWithAvailableFields()
+    {
+        // Arrange
+        var book = "Test Book";
+        var author = "Test Author";
+        var narrator = "Test Narrator";
+        
+        var partialDto = new AudiobookDescriptionDto
+        {
+            Title = "Test Book",
+            Author = "Test Author",
+            // Other fields remain empty/null
+        };
+
+        var jsonResponse = JsonSerializer.Serialize(partialDto);
+        
+        _aiProvider
+            .AskAsync(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                null,
+                Arg.Any<CancellationToken>())
+            .Returns(jsonResponse);
+
+        // Act
+        var result = await _sut.GetAudiobookInfoFromAIAsync(book, author, narrator);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Title.Should().Be("Test Book");
+        result.Author.Should().Be("Test Author");
+        result.Description.Should().BeEmpty();
+        result.Themes.Should().BeNull();
+    }
+
+    #endregion
 }
