@@ -19,15 +19,28 @@ public class AudioTagService : IAudioTagService
        : string.Empty;
 
         // Extract cover image if present
-        string coverImageTempPath = string.Empty;
-        if (file.Tag.Pictures is { Length: > 0 })
-        {
-            var pic = file.Tag.Pictures[0];
-            var ext = pic.MimeType?.Contains("png") == true ? ".png" : ".jpg";
-            var tempPath = Path.Combine(Path.GetTempPath(), $"cover_{Guid.NewGuid()}{ext}");
-            System.IO.File.WriteAllBytes(tempPath, pic.Data.Data);
-            coverImageTempPath = tempPath;
-        }
+        var coverImageTempPath = string.Empty;
+        if (file.Tag.Pictures is not { Length: > 0 })
+            return new AudiobookTagDto(
+                author: tag.FirstPerformer ?? string.Empty,
+                title: tag.Title ?? string.Empty,
+                album: tag.Album ?? string.Empty,
+                trackNumber: (int?)tag.Track,
+                year: tag.Year == 0 ? null : tag.Year,
+                genre: genreString,
+                narrator: tag.FirstAlbumArtist ?? string.Empty,
+                producer: tag.JoinedComposers, // fallback
+                copyright: tag.Copyright ?? string.Empty,
+                publisher: tag.Publisher ?? string.Empty,
+                comment: tag.Comment ?? string.Empty,
+                asin: string.Empty, // custom, not standard
+                coverImageUrl: coverImageTempPath // custom external reference
+            );
+        var pic = file.Tag.Pictures[0];
+        var ext = pic.MimeType?.Contains("png") == true ? ".png" : ".jpg";
+        var tempPath = Path.Combine(Path.GetTempPath(), $"cover_{Guid.NewGuid()}{ext}");
+        System.IO.File.WriteAllBytes(tempPath, pic.Data.Data);
+        coverImageTempPath = tempPath;
 
         // Map tag fields
         return new AudiobookTagDto(
