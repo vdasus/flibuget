@@ -4,14 +4,9 @@ using System.IO.Abstractions;
 
 namespace flibuget.Core.InfraServices.AudioTags;
 
-public class AudioTagService : IAudioTagService
+public class AudioTagService(IFileSystem? fileSystem = null) : IAudioTagService
 {
-    private readonly IFileSystem _fileSystem;
-
-    public AudioTagService(IFileSystem? fileSystem = null)
-    {
-        _fileSystem = fileSystem ?? new FileSystem();
-    }
+    private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystem();
 
     public AudiobookTagDto Read(string filePath)
     {
