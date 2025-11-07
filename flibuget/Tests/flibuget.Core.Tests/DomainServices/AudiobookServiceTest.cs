@@ -9,7 +9,6 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System.Text.Json;
 using flibuget.Core.Domain.DTO;
-using Xunit;
 
 namespace flibuget.Core.Tests.DomainServices;
 

@@ -1,6 +1,5 @@
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;
-using AutoFixture.Xunit2;
 using flibuget.Core.InfraServices;
 using flibuget.Core.InfraServices.AI;
 using FluentAssertions;

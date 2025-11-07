@@ -1,13 +1,21 @@
 using flibuget.Core.Domain.DTO;
 using TagLib;
+using System.IO.Abstractions;
 
 namespace flibuget.Core.InfraServices.AudioTags;
 
 public class AudioTagService : IAudioTagService
 {
+    private readonly IFileSystem _fileSystem;
+
+    public AudioTagService(IFileSystem? fileSystem = null)
+    {
+        _fileSystem = fileSystem ?? new FileSystem();
+    }
+
     public AudiobookTagDto Read(string filePath)
     {
-        if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
+        if (string.IsNullOrWhiteSpace(filePath) || !_fileSystem.File.Exists(filePath))
             throw new FileNotFoundException($"Audio file not found [{filePath}]");
 
         using var file = TagLib.File.Create(filePath);
@@ -16,7 +24,7 @@ public class AudioTagService : IAudioTagService
         // Join multiple genres with semicolon for display/editing
         var genreString = tag.Genres is { Length: > 0 }
             ? string.Join("; ", tag.Genres)
-       : string.Empty;
+            : string.Empty;
 
         // Extract cover image if present
         var coverImageTempPath = string.Empty;
@@ -38,32 +46,32 @@ public class AudioTagService : IAudioTagService
             );
         var pic = file.Tag.Pictures[0];
         var ext = pic.MimeType?.Contains("png") == true ? ".png" : ".jpg";
-        var tempPath = Path.Combine(Path.GetTempPath(), $"cover_{Guid.NewGuid()}{ext}");
-        System.IO.File.WriteAllBytes(tempPath, pic.Data.Data);
+        var tempPath = _fileSystem.Path.Combine(_fileSystem.Path.GetTempPath(), $"cover_{Guid.NewGuid()}{ext}");
+        _fileSystem.File.WriteAllBytes(tempPath, pic.Data.Data);
         coverImageTempPath = tempPath;
 
         // Map tag fields
         return new AudiobookTagDto(
-   author: tag.FirstPerformer ?? string.Empty,
-   title: tag.Title ?? string.Empty,
-        album: tag.Album ?? string.Empty,
-        trackNumber: (int?)tag.Track,
-        year: tag.Year == 0 ? null : tag.Year,
-        genre: genreString,
-        narrator: tag.FirstAlbumArtist ?? string.Empty,
-        producer: tag.JoinedComposers, // fallback
-     copyright: tag.Copyright ?? string.Empty,
-        publisher: tag.Publisher ?? string.Empty,
-        comment: tag.Comment ?? string.Empty,
-        asin: string.Empty, // custom, not standard
-  coverImageUrl: coverImageTempPath // custom external reference
+            author: tag.FirstPerformer ?? string.Empty,
+            title: tag.Title ?? string.Empty,
+            album: tag.Album ?? string.Empty,
+            trackNumber: (int?)tag.Track,
+            year: tag.Year == 0 ? null : tag.Year,
+            genre: genreString,
+            narrator: tag.FirstAlbumArtist ?? string.Empty,
+            producer: tag.JoinedComposers, // fallback
+            copyright: tag.Copyright ?? string.Empty,
+            publisher: tag.Publisher ?? string.Empty,
+            comment: tag.Comment ?? string.Empty,
+            asin: string.Empty, // custom, not standard
+            coverImageUrl: coverImageTempPath // custom external reference
         );
     }
 
     public void Write(string filePath, AudiobookTagDto tags, bool overwriteExisting = false)
     {
         ArgumentNullException.ThrowIfNull(tags);
-        if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
+        if (string.IsNullOrWhiteSpace(filePath) || !_fileSystem.File.Exists(filePath))
             throw new FileNotFoundException("Audio file not found", filePath); // disambiguate File
 
         using var file = TagLib.File.Create(filePath);
@@ -100,9 +108,9 @@ public class AudioTagService : IAudioTagService
         // Handle cover image
         if (!string.IsNullOrEmpty(tags.CoverImageUrl))
         {
-            if (System.IO.File.Exists(tags.CoverImageUrl))
+            if (_fileSystem.File.Exists(tags.CoverImageUrl))
             {
-                var bytes = System.IO.File.ReadAllBytes(tags.CoverImageUrl);
+                var bytes = _fileSystem.File.ReadAllBytes(tags.CoverImageUrl);
                 var mime = tags.CoverImageUrl.EndsWith(".png") ? "image/png" : "image/jpeg";
                 var picture = new Picture
                 {
@@ -129,10 +137,10 @@ public class AudioTagService : IAudioTagService
         return;
 
         bool ShouldSet(string? incoming, string? existing) =>
-       !string.IsNullOrEmpty(incoming) && (overwriteExisting || string.IsNullOrEmpty(existing));
+            !string.IsNullOrEmpty(incoming) && (overwriteExisting || string.IsNullOrEmpty(existing));
 
         bool ShouldSetArray(string? incoming, string[] existing) =>
-                   !string.IsNullOrEmpty(incoming) && (overwriteExisting || existing.Length == 0);
+            !string.IsNullOrEmpty(incoming) && (overwriteExisting || existing.Length == 0);
 
         bool PictureEquals(IPicture? a, IPicture? b)
         {

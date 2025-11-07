@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36525.3" />
+    <PackageReference Include="System.IO.Abstractions" Version="22.0.16" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
     <PackageReference Include="BenchmarkDotNet" Version="0.15.6" />
   </ItemGroup>
