@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using flibuget.Core.Domain.Attributes;
 using flibuget.Core.Domain.DTO;
 using flibuget.Core.DomainServices;
 using flibuget.Core.InfraServices;
@@ -13,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -39,40 +41,13 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private AudiobookFile? selectedFile;
 
-    // Tag fields - editable
-    [ObservableProperty]
-    private string author = string.Empty;
-
-    [ObservableProperty]
-    private string title = string.Empty;
-
-    [ObservableProperty]
-    private string album = string.Empty;
-
-    [ObservableProperty]
-    private string? year;
-
-    // Genre can contain multiple values separated by semicolon (e.g., "Fantasy; Adventure; Humor")
-    [ObservableProperty]
-    private string genre = string.Empty;
-
-    [ObservableProperty]
-    private string narrator = string.Empty;
-
-    [ObservableProperty]
-    private string producer = string.Empty;
-
-    [ObservableProperty]
-    private string copyright = string.Empty;
-
-    [ObservableProperty]
-    private string publisher = string.Empty;
-
-    [ObservableProperty]
-    private string comment = string.Empty;
-
-    [ObservableProperty]
-    private string asin = string.Empty;
+    // Dynamic tag fields - manually implemented to avoid source generator timing issues
+    private ObservableCollection<TagFieldItem> _tagFields = [];
+    public ObservableCollection<TagFieldItem> TagFields
+    {
+        get => _tagFields;
+        set => SetProperty(ref _tagFields, value);
+    }
 
     [ObservableProperty]
     private Bitmap? coverImage;
@@ -126,7 +101,70 @@ public partial class MainViewModel : ViewModelBase
         _audiobookService = audiobookService ?? throw new ArgumentNullException(nameof(audiobookService));
         _httpService = httpService ?? throw new ArgumentNullException(nameof(httpService));
 
+        InitializeTagFields();
         _logger?.LogInformation("MainViewModel initialized");
+    }
+
+    /// <summary>
+    /// Initialize tag fields from AudiobookTagDto properties using reflection and TagDisplay attributes.
+    /// </summary>
+    private void InitializeTagFields()
+    {
+        var properties = typeof(AudiobookTagDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        var tagFieldsList = new List<TagFieldItem>();
+
+        foreach (var prop in properties)
+        {
+            var attr = prop.GetCustomAttribute<TagDisplayAttribute>();
+            
+            // Skip ignored properties
+            if (attr?.Ignore == true)
+                continue;
+
+            var displayName = attr?.DisplayName ?? AddSpacesToPropertyName(prop.Name);
+            var watermark = attr?.Watermark ?? string.Empty;
+            var order = attr?.Order ?? int.MaxValue;
+            var isMultiLine = attr?.IsMultiLine ?? false;
+
+            tagFieldsList.Add(new TagFieldItem
+            {
+                PropertyName = prop.Name,
+                DisplayName = displayName,
+                Value = string.Empty,
+                Watermark = watermark,
+                Order = order,
+                IsMultiLine = isMultiLine
+            });
+        }
+
+        // Sort by order, then by display name
+        TagFields = new ObservableCollection<TagFieldItem>(
+            tagFieldsList.OrderBy(f => f.Order).ThenBy(f => f.DisplayName)
+        );
+    }
+
+    /// <summary>
+    /// Convert property name to display name by adding spaces before capitals.
+    /// Example: "TrackNumber" -> "Track Number"
+    /// </summary>
+    private static string AddSpacesToPropertyName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return name;
+
+        var result = new System.Text.StringBuilder();
+        result.Append(name[0]);
+
+        for (int i = 1; i < name.Length; i++)
+        {
+            if (char.IsUpper(name[i]) && i > 0 && !char.IsUpper(name[i - 1]))
+            {
+                result.Append(' ');
+            }
+            result.Append(name[i]);
+        }
+
+        return result.ToString();
     }
 
     #region Project Commands
@@ -208,20 +246,26 @@ public partial class MainViewModel : ViewModelBase
                 return;
             }
 
+            // Helper to get field value
+            string GetFieldValue(string propertyName)
+            {
+                return TagFields.FirstOrDefault(f => f.PropertyName == propertyName)?.Value ?? string.Empty;
+            }
+
             var project = new AudiobookProject
             {
                 FolderPath = CurrentFolderPath,
-                Author = Author,
-                Title = Title,
-                Album = Album,
-                Year = int.TryParse(Year, out var y) ? y : null,
-                Genre = Genre,
-                Narrator = Narrator,
-                Producer = Producer,
-                Copyright = Copyright,
-                Publisher = Publisher,
-                Comment = Comment,
-                ASIN = Asin,
+                Author = GetFieldValue(nameof(AudiobookTagDto.Author)),
+                Title = GetFieldValue(nameof(AudiobookTagDto.Title)),
+                Album = GetFieldValue(nameof(AudiobookTagDto.Album)),
+                Year = int.TryParse(GetFieldValue(nameof(AudiobookTagDto.Year)), out var y) ? y : null,
+                Genre = GetFieldValue(nameof(AudiobookTagDto.Genre)),
+                Narrator = GetFieldValue(nameof(AudiobookTagDto.Narrator)),
+                Producer = GetFieldValue(nameof(AudiobookTagDto.Producer)),
+                Copyright = GetFieldValue(nameof(AudiobookTagDto.Copyright)),
+                Publisher = GetFieldValue(nameof(AudiobookTagDto.Publisher)),
+                Comment = GetFieldValue(nameof(AudiobookTagDto.Comment)),
+                ASIN = GetFieldValue(nameof(AudiobookTagDto.ASIN)),
                 CoverImagePath = CoverImagePath
             };
 
@@ -298,23 +342,30 @@ public partial class MainViewModel : ViewModelBase
             LogToConsole("Fetching audiobook information from AI...");
 
             // Use author and title/album as search terms
-            var searchAuthor = !string.IsNullOrWhiteSpace(Author) ? Author : "Unknown";
-            var searchTitle = !string.IsNullOrWhiteSpace(Title) ? Title :
-                      !string.IsNullOrWhiteSpace(Album) ? Album : "Unknown";
+            var authorField = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.Author));
+            var titleField = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.Title));
+            var albumField = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.Album));
+            var narratorField = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.Narrator));
 
-            var dto = await _audiobookService.GetAudiobookInfoFromAIAsync(searchTitle, searchAuthor, Narrator)
+            var searchAuthor = !string.IsNullOrWhiteSpace(authorField?.Value) ? authorField.Value : "Unknown";
+            var searchTitle = !string.IsNullOrWhiteSpace(titleField?.Value) ? titleField.Value :
+                      !string.IsNullOrWhiteSpace(albumField?.Value) ? albumField.Value : "Unknown";
+            var searchNarrator = narratorField?.Value ?? string.Empty;
+
+            var dto = await _audiobookService.GetAudiobookInfoFromAIAsync(searchTitle, searchAuthor, searchNarrator)
                     .ConfigureAwait(true);
 
             // Map AI response to tag fields
-            Author = dto.Author ?? Author;
-            Title = dto.Title ?? Title;
-            Album = dto.Title ?? Album; // AI returns book title, use it for album
-            Narrator = dto.Narrator ?? Narrator;
-            Comment = dto.Description ?? Comment;
-            Year = dto.Year?.ToString() ?? Year;
+            UpdateFieldValue(nameof(AudiobookTagDto.Author), dto.Author);
+            UpdateFieldValue(nameof(AudiobookTagDto.Title), dto.Title);
+            UpdateFieldValue(nameof(AudiobookTagDto.Album), dto.Title); // AI returns book title, use it for album
+            UpdateFieldValue(nameof(AudiobookTagDto.Narrator), dto.Narrator);
+            UpdateFieldValue(nameof(AudiobookTagDto.Comment), dto.Description);
+            UpdateFieldValue(nameof(AudiobookTagDto.Year), dto.Year?.ToString());
+            
             // Handle multiple genres/themes - join with semicolon
-
-            Genre = dto.Themes is { Count: > 0 } ? string.Join("; ", dto.Themes) : "Audiobook";
+            var genreValue = dto.Themes is { Count: > 0 } ? string.Join("; ", dto.Themes) : "Audiobook";
+            UpdateFieldValue(nameof(AudiobookTagDto.Genre), genreValue);
 
             // Load cover image
             if (!string.IsNullOrWhiteSpace(dto.CoverLink))
@@ -347,6 +398,20 @@ public partial class MainViewModel : ViewModelBase
         {
             _logger?.LogError(ex, "Error fetching data from AI");
             LogToConsole($"Error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Helper to update a tag field value, only if the new value is not null/empty.
+    /// </summary>
+    private void UpdateFieldValue(string propertyName, string? newValue)
+    {
+        if (string.IsNullOrWhiteSpace(newValue)) return;
+        
+        var field = TagFields.FirstOrDefault(f => f.PropertyName == propertyName);
+        if (field != null)
+        {
+            field.Value = newValue;
         }
     }
 
@@ -581,17 +646,15 @@ public partial class MainViewModel : ViewModelBase
 
     private void PopulateTagFields(AudiobookTagDto tags)
     {
-        Author = tags.Author ?? string.Empty;
-        Title = tags.Title ?? string.Empty;
-        Album = tags.Album ?? string.Empty;
-        Year = tags.Year?.ToString() ?? string.Empty;
-        Genre = tags.Genre ?? string.Empty;
-        Narrator = tags.Narrator ?? string.Empty;
-        Producer = tags.Producer ?? string.Empty;
-        Copyright = tags.Copyright ?? string.Empty;
-        Publisher = tags.Publisher ?? string.Empty;
-        Comment = tags.Comment ?? string.Empty;
-        Asin = tags.ASIN ?? string.Empty;
+        foreach (var field in TagFields)
+        {
+            var prop = typeof(AudiobookTagDto).GetProperty(field.PropertyName);
+            if (prop == null) continue;
+
+            var value = prop.GetValue(tags);
+            field.Value = value?.ToString() ?? string.Empty;
+        }
+
         // Load cover image if present
         if (!string.IsNullOrEmpty(tags.CoverImageUrl) && File.Exists(tags.CoverImageUrl))
         {
@@ -613,49 +676,65 @@ public partial class MainViewModel : ViewModelBase
     {
         const string multiplePlaceholder = "<multiple>";
 
-        Author = GetCommonValue(allTags.Select(t => t.Author), multiplePlaceholder);
-        Title = GetCommonValue(allTags.Select(t => t.Title), multiplePlaceholder);
-        Album = GetCommonValue(allTags.Select(t => t.Album), multiplePlaceholder);
-        Year = GetCommonValue(allTags.Select(t => t.Year?.ToString() ?? string.Empty), multiplePlaceholder);
-        Genre = GetCommonValue(allTags.Select(t => t.Genre), multiplePlaceholder);
-        Narrator = GetCommonValue(allTags.Select(t => t.Narrator), multiplePlaceholder);
-        Producer = GetCommonValue(allTags.Select(t => t.Producer), multiplePlaceholder);
-        Copyright = GetCommonValue(allTags.Select(t => t.Copyright), multiplePlaceholder);
-        Publisher = GetCommonValue(allTags.Select(t => t.Publisher), multiplePlaceholder);
-        Comment = GetCommonValue(allTags.Select(t => t.Comment), multiplePlaceholder);
-        Asin = GetCommonValue(allTags.Select(t => t.ASIN), multiplePlaceholder);
-    }
+        foreach (var field in TagFields)
+        {
+            var prop = typeof(AudiobookTagDto).GetProperty(field.PropertyName);
+            if (prop == null) continue;
 
-    private string GetCommonValue(IEnumerable<string?> values, string multiplePlaceholder)
-    {
-        var distinctValues = values.Where(v => !string.IsNullOrEmpty(v)).Distinct().ToList();
-        return distinctValues.Count == 1 ? distinctValues[0]! :
-            distinctValues.Count > 1 ? multiplePlaceholder : string.Empty;
+            var values = allTags
+                .Select(dto => prop.GetValue(dto)?.ToString() ?? string.Empty)
+                .Where(v => !string.IsNullOrEmpty(v))
+                .Distinct()
+                .ToList();
+
+            field.Value = values.Count == 1 ? values[0] :
+                         values.Count > 1 ? multiplePlaceholder : string.Empty;
+        }
     }
 
     private AudiobookTagDto CreateTagDtoFromFields()
     {
         const string multiplePlaceholder = "<multiple>";
 
-        // For fields that show <multiple>, we should keep them as null to avoid overwriting
-        // Only write fields that have actual values (not empty, not <multiple>)
+        // Helper to get field value or empty string
+        string GetFieldValue(string propertyName)
+        {
+            var field = TagFields.FirstOrDefault(f => f.PropertyName == propertyName);
+            if (field == null) return string.Empty;
+            
+            var value = field.Value;
+            return value != multiplePlaceholder && !string.IsNullOrWhiteSpace(value) ? value : string.Empty;
+        }
+
+        // Helper to get nullable uint for Year
+        uint? GetYearValue()
+        {
+            var field = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.Year));
+            if (field == null || field.Value == multiplePlaceholder) return null;
+            return uint.TryParse(field.Value, out var y) ? y : null;
+        }
+
+        // Helper to get nullable int for TrackNumber
+        int? GetTrackNumberValue()
+        {
+            var field = TagFields.FirstOrDefault(f => f.PropertyName == nameof(AudiobookTagDto.TrackNumber));
+            if (field == null || field.Value == multiplePlaceholder) return null;
+            return int.TryParse(field.Value, out var t) ? t : null;
+        }
+
         return new AudiobookTagDto(
-            author: Author != multiplePlaceholder && !string.IsNullOrWhiteSpace(Author) ? Author : string.Empty,
-            title: Title != multiplePlaceholder && !string.IsNullOrWhiteSpace(Title) ? Title : string.Empty,
-            album: Album != multiplePlaceholder && !string.IsNullOrWhiteSpace(Album) ? Album : string.Empty,
-            trackNumber: null,
-            year: Year != multiplePlaceholder && uint.TryParse(Year, out var y) ? y : null,
-            genre: Genre != multiplePlaceholder && !string.IsNullOrWhiteSpace(Genre) ? Genre : string.Empty,
-            narrator: Narrator != multiplePlaceholder && !string.IsNullOrWhiteSpace(Narrator) ? Narrator : string.Empty,
-            producer: Producer != multiplePlaceholder && !string.IsNullOrWhiteSpace(Producer) ? Producer : string.Empty,
-            copyright: Copyright != multiplePlaceholder && !string.IsNullOrWhiteSpace(Copyright)
-                ? Copyright
-                : string.Empty,
-            publisher: Publisher != multiplePlaceholder && !string.IsNullOrWhiteSpace(Publisher)
-                ? Publisher
-                : string.Empty,
-            comment: Comment != multiplePlaceholder && !string.IsNullOrWhiteSpace(Comment) ? Comment : string.Empty,
-            asin: Asin != multiplePlaceholder && !string.IsNullOrWhiteSpace(Asin) ? Asin : string.Empty,
+            author: GetFieldValue(nameof(AudiobookTagDto.Author)),
+            title: GetFieldValue(nameof(AudiobookTagDto.Title)),
+            album: GetFieldValue(nameof(AudiobookTagDto.Album)),
+            trackNumber: GetTrackNumberValue(),
+            year: GetYearValue(),
+            genre: GetFieldValue(nameof(AudiobookTagDto.Genre)),
+            narrator: GetFieldValue(nameof(AudiobookTagDto.Narrator)),
+            producer: GetFieldValue(nameof(AudiobookTagDto.Producer)),
+            copyright: GetFieldValue(nameof(AudiobookTagDto.Copyright)),
+            publisher: GetFieldValue(nameof(AudiobookTagDto.Publisher)),
+            comment: GetFieldValue(nameof(AudiobookTagDto.Comment)),
+            asin: GetFieldValue(nameof(AudiobookTagDto.ASIN)),
             coverImageUrl: CoverImagePath
         );
     }
@@ -673,17 +752,10 @@ public partial class MainViewModel : ViewModelBase
 
     private void ClearTagFields()
     {
-        Author = string.Empty;
-        Title = string.Empty;
-        Album = string.Empty;
-        Year = string.Empty;
-        Genre = string.Empty;
-        Narrator = string.Empty;
-        Producer = string.Empty;
-        Copyright = string.Empty;
-        Publisher = string.Empty;
-        Comment = string.Empty;
-        Asin = string.Empty;
+        foreach (var field in TagFields)
+        {
+            field.Value = string.Empty;
+        }
         CoverImage = null;
         CoverImagePath = string.Empty;
     }

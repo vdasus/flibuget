@@ -235,92 +235,33 @@
 
   <!-- Right: Tag Fields -->
           <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-         <StackPanel Spacing="12">
-    
-            <!-- Author -->
-        <StackPanel>
-          <TextBlock Text="Author" FontWeight="Medium" 
- Foreground="#555" Margin="0,0,0,4"/>
-             <TextBox Text="{Binding Author}" Watermark="Author name"/>
-   </StackPanel>
-
-          <!-- Title -->
-         <StackPanel>
-      <TextBlock Text="Title" FontWeight="Medium" 
-            Foreground="#555" Margin="0,0,0,4"/>
-       <TextBox Text="{Binding Title}" Watermark="Book title"/>
-       </StackPanel>
-
-        <!-- Album -->
-     <StackPanel>
-      <TextBlock Text="Album" FontWeight="Medium" 
-          Foreground="#555" Margin="0,0,0,4"/>
-      <TextBox Text="{Binding Album}" Watermark="Album name"/>
-           </StackPanel>
-
-       <!-- Year & Genre -->
-       <Grid ColumnDefinitions="*,12,*">
-          <StackPanel Grid.Column="0">
-           <TextBlock Text="Year" FontWeight="Medium" 
-     Foreground="#555" Margin="0,0,0,4"/>
-       <TextBox Text="{Binding Year}" Watermark="2024"/>
-            </StackPanel>
-             
-    <StackPanel Grid.Column="2">
-       <TextBlock Text="Genre" FontWeight="Medium" 
-     Foreground="#555" Margin="0,0,0,4"/>
-     <TextBox Text="{Binding Genre}" Watermark="Audiobook"/>
-   </StackPanel>
-    </Grid>
-
-                   <!-- Narrator -->
-          <StackPanel>
-      <TextBlock Text="Narrator" FontWeight="Medium" 
-         Foreground="#555" Margin="0,0,0,4"/>
-        <TextBox Text="{Binding Narrator}" Watermark="Narrator name"/>
-         </StackPanel>
-
-  <!-- Producer -->
-    <StackPanel>
-         <TextBlock Text="Producer" FontWeight="Medium" 
-              Foreground="#555" Margin="0,0,0,4"/>
- <TextBox Text="{Binding Producer}" Watermark="Producer name"/>
-             </StackPanel>
-
-     <!-- Publisher -->
-        <StackPanel>
-       <TextBlock Text="Publisher" FontWeight="Medium" 
-       Foreground="#555" Margin="0,0,0,4"/>
-    <TextBox Text="{Binding Publisher}" Watermark="Publisher name"/>
-    </StackPanel>
-
-   <!-- Copyright -->
-  <StackPanel>
-             <TextBlock Text="Copyright" FontWeight="Medium" 
-           Foreground="#555" Margin="0,0,0,4"/>
- <TextBox Text="{Binding Copyright}" Watermark="Copyright information"/>
-               </StackPanel>
-
-           <!-- ASIN -->
-<StackPanel>
-         <TextBlock Text="ASIN" FontWeight="Medium" 
-         Foreground="#555" Margin="0,0,0,4"/>
-             <TextBox Text="{Binding Asin}" Watermark="Amazon ASIN"/>
-   </StackPanel>
-
-<!-- Comment -->
-          <StackPanel>
-                 <TextBlock Text="Comment / Description" FontWeight="Medium" 
-   Foreground="#555" Margin="0,0,0,4"/>
-             <TextBox Text="{Binding Comment}" 
-           Watermark="Additional notes or description"
-  AcceptsReturn="True"
-         TextWrapping="Wrap"
-         MinHeight="80"/>
-        </StackPanel>
-
-      </StackPanel>
-              </ScrollViewer>
+             <ItemsControl ItemsSource="{Binding TagFields}">
+                 <ItemsControl.ItemTemplate>
+                     <DataTemplate>
+                         <StackPanel Margin="0,0,0,12">
+                             <!-- Label -->
+                             <TextBlock Text="{Binding DisplayName}" 
+                                       FontWeight="Medium" 
+                                       Foreground="#555" 
+                                       Margin="0,0,0,4"/>
+                             
+                             <!-- Single-line TextBox -->
+                             <TextBox Text="{Binding Value}" 
+                                     Watermark="{Binding Watermark}"
+                                     IsVisible="{Binding !IsMultiLine}"/>
+                             
+                             <!-- Multi-line TextBox -->
+                             <TextBox Text="{Binding Value}" 
+                                     Watermark="{Binding Watermark}"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="80"
+                                     IsVisible="{Binding IsMultiLine}"/>
+                         </StackPanel>
+                     </DataTemplate>
+                 </ItemsControl.ItemTemplate>
+             </ItemsControl>
+          </ScrollViewer>
 
    </Grid>
               </Grid>

@@ -68,10 +68,9 @@ public class MainViewModelTests
         var sut = new MainViewModel(_mockLogger, _mockServiceProvider, _mockTagService, _audiobookService, _mockHttpService);
 
         // Assert
-        sut.Author.Should().BeEmpty();
-        sut.Title.Should().BeEmpty();
-        sut.Album.Should().BeEmpty();
-        sut.Genre.Should().BeEmpty();
+        sut.TagFields.Should().NotBeNull();
+        sut.TagFields.Should().NotBeEmpty(); // Should have initialized fields from AudiobookTagDto
+        sut.TagFields.Should().AllSatisfy(f => f.Value.Should().BeEmpty());
         sut.ConsoleOutput.Should().BeEmpty();
         sut.CurrentFolderPath.Should().BeEmpty();
     }
