@@ -4,13 +4,13 @@ This application uses Serilog for logging with configuration support from `appse
 
 ## Features
 
-- **Configurable from appsettings.json**: All logging settings can be modified without recompiling
-- **Environment-Specific Settings**: Automatic loading of Development/Production configurations
-- **Multiple Sinks**: Logs to Console and File simultaneously
-- **Plain Text Logs**: Human-readable logs in `logs/flibuget-{date}.txt`
-- **Structured JSON Logs**: Machine-parseable JSON logs in `logs/flibuget-{date}.json`
-- **Rolling Files**: Log files are created daily with date in filename
-- **Dependency Injection**: ILogger<T> is available throughout the application
+- Configurable from appsettings.json: All logging settings can be modified without recompiling
+- Environment-Specific Settings: Automatic loading of Development/Production configurations
+- Multiple Sinks: Logs to Console and File simultaneously
+- Plain Text Logs: Human-readable logs in `logs/flibuget-{date}.txt`
+- Structured JSON Logs: Machine-parseable JSON logs in `logs/flibuget-{date}.json`
+- Rolling Files: Log files are created daily with date in filename
+- Dependency Injection: ILogger<T> is available throughout the application
 
 ## Configuration
 
@@ -18,9 +18,9 @@ The application automatically loads configuration based on the environment:
 
 ### Environment Detection
 
-1. **Debug Builds**: Automatically uses `Development` environment
-2. **Release Builds**: Defaults to `Production` environment
-3. **Environment Variable Override**: Set `DOTNET_ENVIRONMENT` or `ASPNETCORE_ENVIRONMENT` to override
+1. Debug Builds: Automatically uses `Development` environment
+2. Release Builds: Defaults to `Production` environment
+3. Environment Variable Override: Set `DOTNET_ENVIRONMENT` or `ASPNETCORE_ENVIRONMENT` to override
 
 Configuration files are loaded in order:
 1. `appsettings.json` (base configuration)
@@ -29,12 +29,12 @@ Configuration files are loaded in order:
 ### Development Environment (`appsettings.Development.json`)
 
 The development configuration includes:
-- **Debug Level Logging**: More verbose output for debugging
-- **More Framework Logs**: Shows Microsoft, System, and Avalonia logs at Information level
-- **Enhanced Console Output**: Includes source context for easier debugging
-- **Detailed File Logs**: Includes all properties in text format
-- **Separate Log Directory**: `logs/development/` to keep dev logs separate
-- **7-Day Retention**: Automatically cleans up old log files
+- Debug Level Logging: More verbose output for debugging
+- More Framework Logs: Shows Microsoft, System, and Avalonia logs at Information level
+- Enhanced Console Output: Includes source context for easier debugging
+- Detailed File Logs: Includes all properties in text format
+- Separate Log Directory: `logs/development/` to keep dev logs separate
+- 7-Day Retention: Automatically cleans up old log files
 
 Example console output in Development:
 ```
@@ -45,11 +45,11 @@ Example console output in Development:
 ### Production Environment (`appsettings.json`)
 
 The production configuration includes:
-- **Information Level Logging**: Only important messages
-- **Minimal Framework Logs**: Microsoft and System at Warning level only
-- **Clean Console Output**: Simplified format
-- **Standard File Logs**: Essential information only
-- **Main Log Directory**: `logs/`
+- Information Level Logging: Only important messages
+- Minimal Framework Logs: Microsoft and System at Warning level only
+- Clean Console Output: Simplified format
+- Standard File Logs: Essential information only
+- Main Log Directory: `logs/`
 
 ### Log Levels
 

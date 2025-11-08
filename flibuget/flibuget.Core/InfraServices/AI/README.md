@@ -4,13 +4,13 @@ This project includes a flexible AI infrastructure service that supports multipl
 
 ## Features
 
-- **Multi-Provider Support**: Seamlessly switch between OpenAI, Perplexity, and potentially other providers
-- **Factory Pattern**: Easy provider instantiation and management
-- **Unified Interface**: Common API across all providers
-- **Configuration-Based**: Configure providers via appsettings.json or environment variables
-- **Type-Safe**: Strongly-typed models and responses
-- **Logging**: Comprehensive logging support
-- **Extensible**: Easy to add new AI providers
+- Multi-Provider Support: Seamlessly switch between OpenAI, Perplexity, and potentially other providers
+- Factory Pattern: Easy provider instantiation and management
+- Unified Interface: Common API across all providers
+- Configuration-Based: Configure providers via appsettings.json or environment variables
+- Type-Safe: Strongly-typed models and responses
+- Logging: Comprehensive logging support
+- Extensible: Easy to add new AI providers
 
 ## Supported Providers
 
@@ -53,8 +53,8 @@ This project includes a flexible AI infrastructure service that supports multipl
 
 Instead of hardcoding API keys in appsettings.json, you can use environment variables (recommended):
 
-- **OpenAI**: Set `OPENAI_API_KEY`
-- **Perplexity**: Set `FLIBUGET_AI_APIKEY`
+- OpenAI: Set `OPENAI_API_KEY`
+- Perplexity: Set `FLIBUGET_AI_APIKEY`
 
 The service will automatically use environment variables if the appsettings.json value is a placeholder.
 
@@ -176,29 +176,29 @@ public class MyController
 
 ### Interfaces
 
-- **`IAIProvider`**: Core interface for AI provider implementations
+- `IAIProvider`: Core interface for AI provider implementations
   - `AskAsync()`: Simple question-answer method
   - `CreateChatCompletionAsync()`: Advanced chat completion with full control
   - `ProviderName`: Read-only property returning provider name
 
-- **`IAIProviderFactory`**: Factory for creating provider instances
+- `IAIProviderFactory`: Factory for creating provider instances
   - `CreateProvider(string)`: Create a specific provider
   - `GetDefaultProvider()`: Get the default configured provider
 
 ### Implementations
 
-- **`OpenAIProvider`**: OpenAI implementation using Azure.AI.OpenAI SDK
-- **`PerplexityProvider`**: Perplexity implementation using HTTP client
-- **`AIProviderFactory`**: Factory implementation managing provider lifecycle
+- `OpenAIProvider`: OpenAI implementation using Azure.AI.OpenAI SDK
+- `PerplexityProvider`: Perplexity implementation using HTTP client
+- `AIProviderFactory`: Factory implementation managing provider lifecycle
 
 ### Models
 
-- **`AIChatMessage`**: Represents a chat message with role and content
-- **`AIChatCompletionRequest`**: Request model with messages, temperature, max tokens, etc.
-- **`AIChatCompletionResponse`**: Response model with choices, usage info, and metadata
-- **`AIProviderConfig`**: Configuration for a provider (API key, model, timeout)
-- **`AIUsage`**: Token usage information (prompt, completion, total)
-- **`AIChoice`**: Individual response choice with message and finish reason
+- `AIChatMessage`: Represents a chat message with role and content
+- `AIChatCompletionRequest`: Request model with messages, temperature, max tokens, etc.
+- `AIChatCompletionResponse`: Response model with choices, usage info, and metadata
+- `AIProviderConfig`: Configuration for a provider (API key, model, timeout)
+- `AIUsage`: Token usage information (prompt, completion, total)
+- `AIChoice`: Individual response choice with message and finish reason
 
 ## Dependency Injection Setup
 
@@ -216,7 +216,7 @@ services.AddScoped<AudiobookService>();
 
 To add a new AI provider (e.g., Anthropic Claude):
 
-1. **Create Provider Class** implementing `IAIProvider`:
+1. Create Provider Class implementing `IAIProvider`:
 
 ```csharp
 public class AnthropicProvider : IAIProvider
@@ -241,7 +241,7 @@ AIChatCompletionRequest request,
 }
 ```
 
-2. **Update Factory** in `AIProviderFactory.CreateProvider`:
+2. Update Factory in `AIProviderFactory.CreateProvider`:
 
 ```csharp
 return providerName.ToLowerInvariant() switch
@@ -253,7 +253,7 @@ return providerName.ToLowerInvariant() switch
 };
 ```
 
-3. **Add Configuration** in `AIServiceExtensions`:
+3. Add Configuration in `AIServiceExtensions`:
 
 ```csharp
 private static AIProviderConfig? ConfigureAnthropic(IConfiguration configuration)
@@ -272,7 +272,7 @@ private static AIProviderConfig? ConfigureAnthropic(IConfiguration configuration
 }
 ```
 
-4. **Update appsettings.json**:
+4. Update appsettings.json:
 
 ```json
 {
@@ -285,16 +285,16 @@ private static AIProviderConfig? ConfigureAnthropic(IConfiguration configuration
 
 ## Best Practices
 
-1. **Use Dependency Injection**: Inject `IAIProvider` or `IAIProviderFactory`
-2. **Configure via Environment Variables**: Keep API keys secure, never commit them
-3. **Handle Errors**: Wrap API calls in try-catch blocks
-4. **Log Appropriately**: Use the built-in logging for debugging and monitoring
-5. **Monitor Token Usage**: Check `response.Usage` to control costs
-6. **Use System Messages**: Provide context to improve response quality
-7. **Set Appropriate Timeouts**: Adjust based on expected response times
-8. **Choose Right Model**: Balance cost vs. capability
-9. **Control Temperature**: Lower (0.1-0.3) for facts, higher (0.7-0.9) for creativity
-10. **Implement Retry Logic**: Handle transient network failures gracefully
+1. Use Dependency Injection: Inject `IAIProvider` or `IAIProviderFactory`
+2. Configure via Environment Variables: Keep API keys secure, never commit them
+3. Handle Errors: Wrap API calls in try-catch blocks
+4. Log Appropriately: Use the built-in logging for debugging and monitoring
+5. Monitor Token Usage: Check `response.Usage` to control costs
+6. Use System Messages: Provide context to improve response quality
+7. Set Appropriate Timeouts: Adjust based on expected response times
+8. Choose Right Model: Balance cost vs. capability
+9. Control Temperature: Lower (0.1-0.3) for facts, higher (0.7-0.9) for creativity
+10. Implement Retry Logic: Handle transient network failures gracefully
 
 ## Examples
 
@@ -338,30 +338,30 @@ Consider caching frequently asked questions to reduce API calls.
 
 ## Security
 
-- **Never commit API keys** to version control
-- **Use environment variables** in production
-- **Rotate keys regularly**
-- **Monitor usage** for unexpected spikes
-- **Implement rate limiting** in your application
-- **Validate user input** before sending to AI
+- Never commit API keys to version control
+- Use environment variables in production
+- Rotate keys regularly
+- Monitor usage for unexpected spikes
+- Implement rate limiting in your application
+- Validate user input before sending to AI
 
 ## Troubleshooting
 
 ### Provider Not Configured
-**Error**: "Provider 'X' is not configured"
-**Solution**: Check that the provider has a valid API key in appsettings.json or environment variable
+Error: "Provider 'X' is not configured"
+Solution: Check that the provider has a valid API key in appsettings.json or environment variable
 
 ### API Key Missing
-**Error**: "API key cannot be null or empty"
-**Solution**: Set the appropriate environment variable or update appsettings.json
+Error: "API key cannot be null or empty"
+Solution: Set the appropriate environment variable or update appsettings.json
 
 ### Model Not Found
-**Error**: Model name not recognized
-**Solution**: Verify the model name matches the provider's supported models
+Error: Model name not recognized
+Solution: Verify the model name matches the provider's supported models
 
 ### Timeout Issues
-**Error**: Request times out
-**Solution**: Increase `TimeoutSeconds` in configuration or optimize your prompt
+Error: Request times out
+Solution: Increase `TimeoutSeconds` in configuration or optimize your prompt
 
 ## License
 
