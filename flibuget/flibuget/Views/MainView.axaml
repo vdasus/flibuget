@@ -247,12 +247,12 @@
                              
                              <!-- Single-line TextBox -->
                              <TextBox Text="{Binding Value}" 
-                                     Watermark="{Binding Watermark}"
+                                     PlaceholderText="{Binding Watermark}"
                                      IsVisible="{Binding !IsMultiLine}"/>
                              
                              <!-- Multi-line TextBox -->
                              <TextBox Text="{Binding Value}" 
-                                     Watermark="{Binding Watermark}"
+                                     PlaceholderText="{Binding Watermark}"
                                      AcceptsReturn="True"
                                      TextWrapping="Wrap"
                                      MinHeight="80"

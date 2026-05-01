@@ -2,6 +2,7 @@ using System.Data;
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;
 using flibuget.Core.InfraServices;
+using flibuget.Infrastructure.Data;
 using FluentAssertions;
 using NSubstitute;
 

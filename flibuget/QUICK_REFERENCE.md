@@ -4,7 +4,7 @@
 
 ### 1. Install Package
 
-Already installed: `Azure.AI.OpenAI` v2.1.0
+Already installed: `Azure.AI.OpenAI` v2.1.0 (in `flibuget.Infrastructure`)
 
 ### 2. Configure API Keys
 
@@ -425,10 +425,9 @@ var data = JsonSerializer.Deserialize<BookInfo>(answer);
 
 ## Resources
 
-?? **Full Documentation**: `flibuget.Core\InfraServices\AI\README.md`  
-?? **Examples**: `flibuget.Core\Examples\AIServiceUsageExample.cs`  
-?? **Tests**: `Tests\flibuget.Core.Tests\DomainServices\AudiobookServiceTest.cs`  
-?? **Summary**: `AI_INFRASTRUCTURE_SUMMARY.md`
+**Full Documentation**: `flibuget.Infrastructure\AI\README.md`  
+**Examples**: `flibuget.Infrastructure\Examples\AIServiceUsageExample.cs`  
+**Tests**: `Tests\flibuget.Core.Tests\DomainServices\AudiobookServiceTest.cs`
 
 ## Common Commands
 

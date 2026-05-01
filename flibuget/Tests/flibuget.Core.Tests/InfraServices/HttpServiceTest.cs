@@ -2,6 +2,7 @@
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;
 using flibuget.Core.InfraServices;
+using flibuget.Infrastructure.Http;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;

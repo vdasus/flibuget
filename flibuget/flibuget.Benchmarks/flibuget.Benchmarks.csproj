@@ -16,12 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.6" />
-    <PackageReference Include="Testably.Abstractions.FileSystem.Interface" Version="9.0.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+    <PackageReference Include="Testably.Abstractions.FileSystem.Interface" Version="10.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\flibuget.Core\flibuget.Core.csproj" />
+    <ProjectReference Include="..\flibuget.Infrastructure\flibuget.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

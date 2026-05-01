@@ -1,6 +1,7 @@
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;
 using flibuget.Core.InfraServices.AI;
+using flibuget.Infrastructure.AI;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;

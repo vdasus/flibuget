@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"D:\\\\REPO\\\\Github\\\\flibuget\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(head *)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\REPO\\\\Github\\\\flibuget\" | Where-Object {$_.PSIsContainer} | Select-Object Name)",
+      "Bash(Get-ChildItem -Path \"D:\\\\REPO\\\\Github\\\\flibuget\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"D:\\\\REPO\\\\Github\\\\flibuget\\\\flibuget\\\\flibuget.Infrastructure\\\\Data\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"D:\\\\REPO\\\\Github\\\\flibuget\\\\flibuget\\\\flibuget.Infrastructure\\\\Http\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"D:\\\\REPO\\\\Github\\\\flibuget\\\\flibuget\\\\flibuget.Infrastructure\\\\AI\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"D:\\\\REPO\\\\Github\\\\flibuget\\\\flibuget\\\\flibuget.Infrastructure\\\\AudioTags\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"D:\\\\REPO\\\\Github\\\\flibuget\\\\flibuget\\\\flibuget.Infrastructure\\\\Configuration\")",
+      "Bash(dotnet build *)"
+    ]
+  }
+}

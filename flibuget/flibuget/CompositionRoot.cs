@@ -1,6 +1,8 @@
-using flibuget.Core.Configuration;
 using flibuget.Core.InfraServices;
-using flibuget.Core.InfraServices.AudioTags;
+using flibuget.Infrastructure.AudioTags;
+using flibuget.Infrastructure.Configuration;
+using flibuget.Infrastructure.Data;
+using flibuget.Infrastructure.Http;
 using flibuget.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

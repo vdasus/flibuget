@@ -1,5 +1,5 @@
 using BenchmarkDotNet.Attributes;
-using flibuget.Core.InfraServices.AudioTags;
+using flibuget.Infrastructure.AudioTags;
 
 namespace flibuget.Benchmarks;
 

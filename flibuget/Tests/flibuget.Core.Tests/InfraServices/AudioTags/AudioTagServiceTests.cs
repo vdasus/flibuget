@@ -1,5 +1,5 @@
 using System.IO.Abstractions;
-using flibuget.Core.InfraServices.AudioTags;
+using flibuget.Infrastructure.AudioTags;
 using flibuget.Core.Domain.DTO;
 using FluentAssertions;
 using NSubstitute;

@@ -10,6 +10,7 @@
   </Folder>
   <Project Path="flibuget.Benchmarks/flibuget.Benchmarks.csproj" />
   <Project Path="flibuget.Core/flibuget.Core.csproj" />
+  <Project Path="flibuget.Infrastructure/flibuget.Infrastructure.csproj" />
   <Project Path="flibuget.Desktop/flibuget.Desktop.csproj" />
   <Project Path="flibuget/flibuget.csproj" />
 </Solution>

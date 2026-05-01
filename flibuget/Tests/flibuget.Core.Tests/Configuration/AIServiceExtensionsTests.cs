@@ -1,8 +1,9 @@
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;
-using flibuget.Core.Configuration;
 using flibuget.Core.InfraServices;
 using flibuget.Core.InfraServices.AI;
+using flibuget.Infrastructure.AI;
+using flibuget.Infrastructure.Configuration;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
