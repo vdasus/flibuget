@@ -45,6 +45,24 @@ public class AudiobookDescriptionDtoTests
         dto.Link.Should().Be(link);
     }
 
+    [Fact]
+    public void Year_Can_Be_Set_And_Retrieved()
+    {
+        var dto = new AudiobookDescriptionDto();
+
+        dto.Year = 1984;
+
+        dto.Year.Should().Be(1984);
+    }
+
+    [Fact]
+    public void Year_IsNullByDefault()
+    {
+        var dto = new AudiobookDescriptionDto();
+
+        dto.Year.Should().BeNull();
+    }
+
  [Fact]
     public void Default_Constructor_Initializes_With_Default_Values()
     {
@@ -103,6 +121,7 @@ public class AudiobookDescriptionDtoTests
         json.Should().Contain("\"narrator\":");
         json.Should().Contain("\"age_restriction\":");
         json.Should().Contain("\"link\":");
+        json.Should().Contain("\"year\":");
 
    deserialized.Should().BeEquivalentTo(dto);
     }

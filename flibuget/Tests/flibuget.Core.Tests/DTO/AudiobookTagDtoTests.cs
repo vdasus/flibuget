@@ -31,7 +31,7 @@ public class AudiobookTagDtoTests
         dto.Title.Should().Be(title);
         dto.Album.Should().Be(album);
         dto.TrackNumber.Should().Be(trackNumber);
-        dto.Year.Should().Be(year.Value);
+        dto.Year.Should().Be(year);
         dto.Genre.Should().Be(genre);
         dto.Narrator.Should().Be(narrator);
         dto.Producer.Should().Be(producer);
@@ -41,5 +41,16 @@ public class AudiobookTagDtoTests
         dto.Description.Should().Be(description);
         dto.ASIN.Should().Be(asin);
         dto.CoverImageUrl.Should().Be(coverImageUrl);
+    }
+
+    [Fact]
+    public void Constructor_WithNullYear_SetsYearToNull()
+    {
+        var dto = new AudiobookTagDto("author", "title", "album", null, null,
+            "genre", "narrator", "producer", "copyright", "publisher",
+            "comment", "description", "asin", "cover");
+
+        dto.Year.Should().BeNull();
+        dto.TrackNumber.Should().BeNull();
     }
 }

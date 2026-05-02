@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(dotnet build *)",
-      "Bash(dotnet test *)"
+      "Bash(dotnet test *)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\REPO\\\\Github\\\\flibuget\\\\flibuget\" -Depth 1 | Where-Object { $_.PSIsContainer -or $_.Extension -eq '.sln' })"
     ]
   }
 }
