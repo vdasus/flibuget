@@ -420,3 +420,6 @@ FodyWeavers.xsd
 *.ncrunchproject
 *.~v
 /flibuget/flibuget/ztemp
+
+# Claude Code local permissions: machine-local, never commit
+**/.claude/settings.local.json
